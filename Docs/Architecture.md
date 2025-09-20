@@ -23,12 +23,10 @@ Oak Hill,201,2025-09-17,0,25.00,0,0,Late payment fee,FALSE,
     "Maple Grove": {
       "unit_count": 12,
       "maf_rate": 0.06,
-      "property_type": "standard"
     },
     "Park Property": {
       "unit_count": 8,
       "maf_rate": 0.08,
-      "property_type": "park_state",
       "airbnb_enabled": true
     }
   },
@@ -159,16 +157,16 @@ class ReportTemplate:
 **5. User Interface (`ui/`)**
 ```python
 # main_window.py (using tkinter/customtkinter)
-class MainWindow:
+class mainwindow:
     def __init__(self):
         self.setup_ui()
         self.file_paths = {}
 
     def setup_ui(self):
-        # File selection section
-        # Progress display
-        # Generate button
-        # Output directory selection
+        # file selection section
+        # progress display
+        # generate button
+        # output directory selection
 
     def select_transactions_file(self)
     def select_credits_file(self)
