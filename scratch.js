@@ -30,9 +30,8 @@ function generateMonthlyReports() {
     return;
   }
 
-  // Define the report period (e.g., for Sep 2025, it's Aug 20 to Sep 19)
-  const endDate = new Date(reportDate.getFullYear(), reportDate.getMonth() + 1, 20);
-  const startDate = new Date(reportDate.getFullYear(), reportDate.getMonth(), 20);
+  const startDate = new Date(reportDate.getFullYear(), reportDate.getMonth() - 1, 20);
+  const endDate = new Date(reportDate.getFullYear(), reportDate.getMonth(), 20);
 
   const properties = getProperties();
   const transactions = getTransactionsData(startDate, endDate);
@@ -40,33 +39,22 @@ function generateMonthlyReports() {
 
   const allUnitCounts = countUnitsPerProperty(TRANSACTIONS_SHEET.getDataRange().getValues());
 
-
-  // --- Create a new Spreadsheet for the month's reports ---
   const reportSpreadsheetName = `Monthly Reports - ${Utilities.formatDate(reportDate, Session.getScriptTimeZone(), "MMM yyyy")}`;
   const newSS = SpreadsheetApp.create(reportSpreadsheetName);
-  // Move the new spreadsheet to the same folder as the current one
   const parentFolder = DriveApp.getFileById(SS.getId()).getParents().next();
   DriveApp.getFileById(newSS.getId()).moveTo(parentFolder);
 
-  // Copy required sheets to the new spreadsheet
-  const bodyTemplate = SS.getSheetByName("ReportBodyTemplate").copyTo(newSS);
-  bodyTemplate.setName("ReportBodyTemplate");
-  const totalsTemplate = SS.getSheetByName("ReportTotalsTemplate").copyTo(newSS);
-  totalsTemplate.setName("ReportTotalsTemplate");
-  const airbnbTemplate = SS.getSheetByName("ReportAirbnbTemplate").copyTo(newSS);
-  airbnbTemplate.setName("ReportAirbnbTemplate");
+  SS.getSheetByName("ReportBodyTemplate").copyTo(newSS).setName("ReportBodyTemplate");
+  SS.getSheetByName("ReportTotalsTemplate").copyTo(newSS).setName("ReportTotalsTemplate");
+  SS.getSheetByName("ReportAirbnbTemplate").copyTo(newSS).setName("ReportAirbnbTemplate");
 
-  // Remove the default "Sheet1"
   newSS.deleteSheet(newSS.getSheetByName('Sheet1'));
-
   SpreadsheetApp.setActiveSpreadsheet(newSS);
-
 
   for (const property of properties) {
     const propertyTransactions = transactions.filter(t => t.Property === property.Property);
     const unitCount = allUnitCounts[property.Property] || 0;
 
-    // Create the report sheet inside the NEW spreadsheet
     const sheetName = createPropertyReport(newSS, property, propertyTransactions, unitCount);
     generatedSheetNames.push({ name: property.Property, sheet: sheetName });
   }
@@ -260,16 +248,17 @@ function getTransactionsData(startDate, endDate) {
     return map;
   }, {});
 
-
-  const dateIndex = headerMap["Date"];
-
   const transactions = allData.map(row => {
     const obj = {};
     headers.forEach((h, i) => obj[h.trim()] = row[i]);
     return obj;
   }).filter(row => {
-    const rowDate = new Date(row.Date);
-    return row.Property && rowDate >= startDate && rowDate < endDate;
+    const rowDate = row.Date;
+    if (!row.Property || !(rowDate instanceof Date)) {
+      return false;
+    }
+    const rowDateTime = rowDate.getTime();
+    return rowDateTime >= startDate.getTime() && rowDateTime < endDate.getTime();
   });
 
   // Pre-calculate Markup Revenue
