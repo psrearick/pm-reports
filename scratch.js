@@ -16,82 +16,142 @@ function importCredits() {
 }
 
 function addCreditsToTransactionSheet(creditsData) {
+  if (!creditsData || creditsData.length <= 1) {
+    SpreadsheetApp.getUi().alert("No valid credit data found to add.");
+    return;
+  }
+
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ws = ss.getSheetByName("Transactions");
+  if (!ws) {
+    SpreadsheetApp.getUi().alert('Error: "Transactions" sheet not found.');
+    return;
+  }
+
+  const lastRow = ws.getLastRow();
+  const transactionHeaders = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
+
+  const headerMap = {};
+  transactionHeaders.forEach((header, i) => {
+    headerMap[header.trim()] = i;
+  });
+
+  // Verify that essential columns exist in the Transactions sheet
+  const requiredCols = ["Date", "Property", "Unit", "Debit/Credit Explanation", "Security Deposits", "Fees", "Credits"];
+  for (const col of requiredCols) {
+    if (headerMap[col] === undefined) {
+      SpreadsheetApp.getUi().alert(`Error: The "Transactions" sheet is missing a required column: "${col}".`);
+      return;
+    }
+  }
+
+  const rowsToAdd = [];
+  const creditsDataOnly = creditsData.slice(1);
+
+  creditsDataOnly.forEach(creditRow => {
+    const date = creditRow[0];
+    const amount = parseCurrency(creditRow[1]);
+    const property = creditRow[2];
+    const unit = creditRow[3];
+    const category = (creditRow[4] || "").toLowerCase().trim();
+    const subcategory = creditRow[5] || "";
+
+    if (category.includes("property general expense") || category.includes("owner distribution")) {
+      return;
+    }
+
+    let newTransactionRow = new Array(transactionHeaders.length).fill('');
+
+    newTransactionRow[headerMap["Date"]] = date;
+    newTransactionRow[headerMap["Property"]] = property;
+    newTransactionRow[headerMap["Unit"]] = unit;
+
+    let explanation = creditRow[4] || "";
+    if (subcategory && subcategory !== "–") {
+        explanation += ` - ${subcategory}`;
+    }
+    newTransactionRow[headerMap["Debit/Credit Explanation"]] = explanation.trim();
+
+    if (category.includes('deposit')) {
+        newTransactionRow[headerMap["Security Deposits"]] = amount;
+    } else if (category.includes('tenant charges') || category.includes('fees') || category.includes('late payment fee')) {
+        newTransactionRow[headerMap["Fees"]] = amount;
+    } else {
+        newTransactionRow[headerMap["Credits"]] = amount;
+    }
+
+    rowsToAdd.push(newTransactionRow);
+  });
+
+  if (rowsToAdd.length > 0) {
+    ws.getRange(lastRow + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
+    SpreadsheetApp.getUi().alert(`${rowsToAdd.length} credit(s) have been added to the Transactions sheet.`);
+  } else {
+    SpreadsheetApp.getUi().alert("No new credits to add after filtering.");
+  }
 }
 
 function filterCreditsData(data) {
   const outputData = [];
-
   const fields = {
-    "Date": { "label": "", "index": 0 },
-    "Amount":  { "label": "", "index": 0 },
-    "Property":  { "label": "", "index": 0 },
-    "Unit":  { "label": "", "index": 0 },
-    "Category":  { "label": "", "index": 0 },
-    "Subcategory":  { "label": "", "index": 0 },
-  }
+    "Date": { label: getAttributeValue("Credits Date"), index: -1 },
+    "Amount":  { label: getAttributeValue("Credits Amount"), index: -1 },
+    "Property":  { label: getAttributeValue("Credits Property"), index: -1 },
+    "Unit":  { label: getAttributeValue("Credits Unit"), index: -1 },
+    "Category":  { label: getAttributeValue("Credits Category"), index: -1 },
+    "Subcategory":  { label: getAttributeValue("Credits Subcategory"), index: -1 },
+  };
 
-  const labelsRow = [];
-  for (const key in fields) {
-    fields[key]["label"] = getAttributeValue("Credits " + key);
-    labelsRow.push(key);
-  }
-  outputData.push(labelsRow);
+  outputData.push(Object.keys(fields));
 
-  let allFieldsDefined = false;
-
-
-  data.forEach((row) => {
-    let includesAllFields = true;
-
+  let headerRowIndex = -1;
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    let foundCount = 0;
     for (const key in fields) {
-      const fieldIndex = row.indexOf(fields[key]["label"]);
-      if (fieldIndex == -1) {
-        includesAllFields = false;
-        break;
+      const fieldIndex = row.indexOf(fields[key].label);
+      if (fieldIndex !== -1) {
+        fields[key].index = fieldIndex;
+        foundCount++;
       }
-
-      fields[key]["index"] = fieldIndex;
     }
 
-    if (includesAllFields) {
-      allFieldsDefined = true;
-      return;
+    if (foundCount >= 4) {
+      headerRowIndex = i;
+      break;
+    }
+  }
+
+  if (headerRowIndex === -1) {
+    Logger.log("Could not find a valid header row in the Credits file.");
+    return [];
+  }
+
+  for (let i = headerRowIndex + 1; i < data.length; i++) {
+    const row = data[i];
+
+    const dateVal = row[fields.Date.index];
+    if (!dateVal || String(dateVal).trim().startsWith("Total")) {
+      continue;
     }
 
-    if (!allFieldsDefined) {
-      return;
+    if (!row[fields.Amount.index] || !row[fields.Property.index]) {
+      continue;
     }
 
-    const newRow = []
+    const unitVal = row[fields.Unit.index];
 
-    if (!row[fields["Date"]["index"]] || row[fields["Date"]["index"]].startsWith("Total")) {
-      return;
-    }
-
-    if (!row[fields["Amount"]["index"]]) {
-      return;
-    }
-
-    if (!row[fields["Property"]["index"]]) {
-      return;
-    }
-
-    if (!row[fields["Unit"]["index"]] || row[fields["Unit"]["index"]] == "–") {
-      return;
-    }
-
-    if (!row[fields["Category"]["index"]]) {
-      return;
-    }
-
-    for (const field in fields) {
-      newRow.push(row[fields[field]["index"]]);
-    }
+    const newRow = [
+      dateVal,
+      row[fields.Amount.index],
+      row[fields.Property.index],
+      (unitVal === "–") ? "" : unitVal,
+      row[fields.Category.index] || "",
+      row[fields.Subcategory.index] || ""
+    ];
 
     outputData.push(newRow);
-  });
+  }
 
   return outputData;
 }
@@ -117,8 +177,6 @@ function onOpen(e) {
   menu.addToUi();
 }
 
-// HELPERS
-
 function getAttributeValue(attributeName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ws = ss.getSheetByName("Configuration");
@@ -137,4 +195,10 @@ function getDataFromSheet(sheetId) {
   const sourceSheet = sheet.getSheets()[0];
 
   return sourceSheet.getDataRange().getValues();
+}
+
+function parseCurrency(value) {
+  if (typeof value === 'number') return value;
+  if (typeof value !== 'string') return 0;
+  return parseFloat(value.replace(/[$,]/g, '')) || 0;
 }
