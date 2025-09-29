@@ -85,7 +85,15 @@ function addCreditsToTransactionSheet(creditsData) {
   });
 
   if (rowsToAdd.length > 0) {
-    TRANSACTIONS.getRange(lastRow + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
+    const startRow = lastRow + 1;
+    const numRows = rowsToAdd.length;
+    TRANSACTIONS.getRange(startRow, 1, numRows, rowsToAdd[0].length).setValues(rowsToAdd);
+
+    const dateColumnIndex = headerMap["Date"] + 1;
+    if (dateColumnIndex > 0) {
+      const dateRange = TRANSACTIONS.getRange(startRow, dateColumnIndex, numRows, 1);
+      dateRange.setNumberFormat("M/dd/yyyy");
+    }
   }
 }
 
@@ -192,7 +200,6 @@ function lookupProperty(searchValue) {
 
   return null;
 }
-
 
 function getProperties() {
   const ws = SS.getSheetByName("Properties");
