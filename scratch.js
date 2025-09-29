@@ -1,12 +1,15 @@
+const SS = SpreadsheetApp.getActiveSpreadsheet();
+const TRANSACTIONS = SS.getSheetByName("Transactions");
+const PROPERTIES = getProperties();
+
 function importCredits() {
   const creditsFile = getAttributeValue("Credits Document");
   const creditsTempFile = convertXLSXToGoogleSheet(creditsFile);
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
   var data = getDataFromSheet(creditsTempFile);
   const filteredData = filterCreditsData(data);
 
   if (getAttributeValue("Add Credits Sheet")) {
-  const creditsSheet = ss.insertSheet(creditsTempFile);
+  const creditsSheet = SS.insertSheet(creditsTempFile);
   creditsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
   }
 
@@ -17,30 +20,24 @@ function importCredits() {
 
 function addCreditsToTransactionSheet(creditsData) {
   if (!creditsData || creditsData.length <= 1) {
-    SpreadsheetApp.getUi().alert("No valid credit data found to add.");
     return;
   }
 
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ws = ss.getSheetByName("Transactions");
-  if (!ws) {
-    SpreadsheetApp.getUi().alert('Error: "Transactions" sheet not found.');
+  if (!TRANSACTIONS) {
     return;
   }
 
-  const lastRow = ws.getLastRow();
-  const transactionHeaders = ws.getRange(1, 1, 1, ws.getLastColumn()).getValues()[0];
+  const lastRow = TRANSACTIONS.getLastRow();
+  const transactionHeaders = TRANSACTIONS.getRange(1, 1, 1, TRANSACTIONS.getLastColumn()).getValues()[0];
 
   const headerMap = {};
   transactionHeaders.forEach((header, i) => {
     headerMap[header.trim()] = i;
   });
 
-  // Verify that essential columns exist in the Transactions sheet
   const requiredCols = ["Date", "Property", "Unit", "Debit/Credit Explanation", "Security Deposits", "Fees", "Credits"];
   for (const col of requiredCols) {
     if (headerMap[col] === undefined) {
-      SpreadsheetApp.getUi().alert(`Error: The "Transactions" sheet is missing a required column: "${col}".`);
       return;
     }
   }
@@ -51,7 +48,11 @@ function addCreditsToTransactionSheet(creditsData) {
   creditsDataOnly.forEach(creditRow => {
     const date = creditRow[0];
     const amount = parseCurrency(creditRow[1]);
-    const property = creditRow[2];
+    let property = creditRow[2]
+    const propertyData = lookupProperty(property);
+    if (propertyData) {
+      property = propertyData.Property;
+    }
     const unit = creditRow[3];
     const category = (creditRow[4] || "").toLowerCase().trim();
     const subcategory = creditRow[5] || "";
@@ -84,10 +85,7 @@ function addCreditsToTransactionSheet(creditsData) {
   });
 
   if (rowsToAdd.length > 0) {
-    ws.getRange(lastRow + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
-    SpreadsheetApp.getUi().alert(`${rowsToAdd.length} credit(s) have been added to the Transactions sheet.`);
-  } else {
-    SpreadsheetApp.getUi().alert("No new credits to add after filtering.");
+    TRANSACTIONS.getRange(lastRow + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
   }
 }
 
@@ -123,21 +121,24 @@ function filterCreditsData(data) {
   }
 
   if (headerRowIndex === -1) {
-    Logger.log("Could not find a valid header row in the Credits file.");
     return [];
   }
 
   for (let i = headerRowIndex + 1; i < data.length; i++) {
     const row = data[i];
 
-    const dateVal = row[fields.Date.index];
-    if (!dateVal || String(dateVal).trim().startsWith("Total")) {
+    const dateField = row[fields.Date.index];
+    if (!dateField || String(dateField).trim().startsWith("Total")) {
       continue;
     }
 
     if (!row[fields.Amount.index] || !row[fields.Property.index]) {
       continue;
     }
+
+    const timeZone = Session.getScriptTimeZone();
+    const format = "MMM dd, yyyy";
+    const dateVal = Utilities.parseDate(String(dateField).trim(), timeZone, format);
 
     const unitVal = row[fields.Unit.index];
 
@@ -177,12 +178,41 @@ function onOpen(e) {
   menu.addToUi();
 }
 
-// HELPERS
+function lookupProperty(searchValue) {
+  for (const property of PROPERTIES) {
+    searchValueLower = searchValue.toLowerCase();
+    const pattern = property.Key.toLowerCase().split(",").join(".*");
+    regex = new RegExp(pattern, "i")
+    const is_match = regex.test(searchValueLower);
+
+    if (is_match) {
+      return property;
+    }
+  }
+
+  return null;
+}
+
+
+function getProperties() {
+  const ws = SS.getSheetByName("Properties");
+  const data = ws.getDataRange().getValues();
+  const keys = data.shift();
+
+  return data.map((propertyValues) => {
+    const property = {};
+
+    for (let i = 0; i < keys.length; i++) {
+      property[keys[i].replace(" ", "")] = propertyValues[i];
+    }
+
+    return property;
+  });
+}
 
 function getAttributeValue(attributeName) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ws = ss.getSheetByName("Configuration");
-  const attributes = ws.getRange("a2:B").getValues();
+  const ws = SS.getSheetByName("Configuration");
+  const attributes = ws.getRange("A2:B").getValues();
   const matches = attributes.filter(x => x[0]==attributeName);
 
   if (matches.length == 0) {
