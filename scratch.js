@@ -10,7 +10,7 @@ function importCredits() {
   creditsSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
   }
 
-  addCreditsToTransactionSheet(data);
+  addCreditsToTransactionSheet(filteredData);
 
   Drive.Files.remove(creditsTempFile);
 }
@@ -176,6 +176,8 @@ function onOpen(e) {
   menu.addItem('Import Credits', 'importCredits');
   menu.addToUi();
 }
+
+// HELPERS
 
 function getAttributeValue(attributeName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
