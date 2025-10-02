@@ -159,9 +159,9 @@ Create three hidden template tabs. These must match the names expected by the sc
 2. Design the layout, then include placeholder markers:
     - Place scalar tokens like `[PROPERTY NAME]`, `[REPORT LABEL]`, `[REPORT PERIOD]` where needed.
     - Add a transaction table with the following pattern:
-        1. A row containing `[[ROW transactions]]` in the first cell (entire row acts as marker).
+        1. A row containing `[[ROW transactions]]` in the first cell (no additional text or spaces anywhere else on that row).
         2. One or more template rows that contain cell-level tokens such as `{unit}`, `{credits}`, `{fees}`, `{debits}`, `{securityDeposits}`, `{date}`, `{explanation}`, `{markupIncluded}`, `{markupRevenue}`, `{internalNotes}`.
-        3. A row containing `[[ENDROW]]` in the first cell.
+        3. A row containing `[[ENDROW]]` in the first cell (again, with no other content on that row).
     - For Airbnb-only sections, wrap them in conditional markers:
         - Row with `[[IF has_airbnb]]`
         - Content rows referencing `[AIRBNB TOTAL]`, `[AIRBNB FEE]`
@@ -173,7 +173,7 @@ Create three hidden template tabs. These must match the names expected by the sc
 1. Create a sheet named ReportTotalsTemplate.
 2. Include placeholders for summary values such as `[REPORT LABEL]`, `[REPORT PERIOD]`.
 3. For the property summary table:
-    - Row containing `[[ROW summary]]`
+    - Row containing `[[ROW summary]]` (token must be the only content in that row)
     - Template row cells referencing `{property}`, `{dueToOwners}`, `{totalToPm}`, `{totalFees}`, `{newLeaseFees}`, `{renewalFees}`
     - Row containing `[[ENDROW]]`
 4. Hide the sheet when finished.
@@ -183,7 +183,7 @@ Create three hidden template tabs. These must match the names expected by the sc
 1. Create a sheet named ReportAirbnbTemplate.
 2. Add scalar placeholders for `[REPORT LABEL]`, `[REPORT PERIOD]`.
 3. Add Airbnb totals table:
-    - `[[ROW airbnb]]`
+    - `[[ROW airbnb]]` (only token in the row)
     - Template row referencing `{property}`, `{income}`, `{collectionFee}`
     - `[[ENDROW]]`
 4. Hide the sheet when finished.
@@ -233,7 +233,7 @@ Create three hidden template tabs. These must match the names expected by the sc
     - Save Staging Data – Pushes changes back to the master sheet for the filtered scope (all properties or the single property).
     - Generate Report – Creates a versioned Google Sheets report using the same control values and logs the run.
     - Export Report (from log) – Prompts for a report label (or uses the most recent entry) and creates PDFs in the configured `Exports` folder.
-2. In generated reports, you can still use the Export > Export All to PDF menu (added automatically to each report) to produce PDFs directly from the report spreadsheet.
+2. In generated reports, you can use Google Sheets’ built-in **File > Download > PDF** action, or rely on the master workbook’s Export command to generate PDFs.
 
 ## 9. Logs & Maintenance
 

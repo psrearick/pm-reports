@@ -13,7 +13,7 @@ function generateReport() {
   renderPropertySheets_(spreadsheet, reportData, settings);
   renderSummarySheet_(spreadsheet, reportData, settings);
   renderAirbnbSheet_(spreadsheet, reportData, settings);
-  addExportMenuToSpreadsheet_(spreadsheet);
+  removeDefaultSheet_(spreadsheet);
   logReportGeneration_(reportData, settings, created, spreadsheet);
   return {
     spreadsheetId: spreadsheet.getId(),
@@ -317,6 +317,13 @@ function formatDateRange_(startDate, endDate) {
     return start + ' - ' + end;
   }
   return start || end;
+}
+
+function removeDefaultSheet_(spreadsheet) {
+  const defaultSheet = spreadsheet.getSheetByName('Sheet1');
+  if (defaultSheet && spreadsheet.getSheets().length > 1) {
+    spreadsheet.deleteSheet(defaultSheet);
+  }
 }
 
 function logReportGeneration_(reportData, settings, created, spreadsheet) {

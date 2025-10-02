@@ -21,7 +21,7 @@ function applyTemplateContext_(sheet, context) {
 
 function processRowBlocks_(sheet, context, warnings) {
   for (;;) {
-    const matches = sheet.createTextFinder('[[ROW').matchEntireCell(true).findAll();
+    const matches = sheet.createTextFinder('[[ROW').findAll();
     if (!matches || !matches.length) {
       break;
     }
@@ -94,7 +94,7 @@ function renderTemplateBlockValues_(templateValues, rowData, placeholders, warni
 
 function processConditionalBlocks_(sheet, context) {
   for (;;) {
-    const matches = sheet.createTextFinder('[[IF').matchEntireCell(true).findAll();
+    const matches = sheet.createTextFinder('[[IF').findAll();
     if (!matches || !matches.length) {
       break;
     }
@@ -150,6 +150,9 @@ function replaceValuePlaceholders_(value, rowData, placeholders, warnings) {
   if (typeof value !== 'string') {
     return value;
   }
+  if (/^\[\[(ROW|ENDROW|IF|ENDIF)/.test(value)) {
+    return value;
+  }
   let output = value;
   output = output.replace(/\{([^}]+)\}/g, function (_, token) {
     const key = token.trim();
@@ -185,4 +188,3 @@ function findMarkerRow_(sheet, startRow, markerValue) {
   }
   return null;
 }
-

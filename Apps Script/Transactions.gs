@@ -2,7 +2,10 @@ function loadStagingData() {
   const controls = getStagingControls_();
   const propertyFilter = controls.property ? [controls.property] : null;
   const masterRows = fetchMasterTransactions_(propertyFilter, controls.startDate, controls.endDate, true);
-  const rowsToDisplay = controls.showDeleted ? masterRows : masterRows.filter(function (record) {
+  const sortedRows = masterRows.slice().sort(function (a, b) {
+    return compareDatesAscending_(a.data['Date'], b.data['Date']);
+  });
+  const rowsToDisplay = controls.showDeleted ? sortedRows : sortedRows.filter(function (record) {
     return !toBool(record.data['Deleted']);
   });
   writeRowsToStaging_(rowsToDisplay.map(function (record) { return record.data; }));
@@ -249,6 +252,23 @@ function normalizeStagingRow_(row, fallbackProperty) {
   transaction['Markup Revenue'] = isBlank_(row['Markup Revenue']) ? '' : parseCurrency_(row['Markup Revenue']);
   transaction['Deleted Timestamp'] = normalizeDateValue_(transaction['Deleted Timestamp']);
   return transaction;
+}
+
+function compareDatesAscending_(a, b) {
+  const dateA = normalizeDateForSort_(a);
+  const dateB = normalizeDateForSort_(b);
+  return dateA - dateB;
+}
+
+function normalizeDateForSort_(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  const parsed = new Date(value);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.getTime();
+  }
+  return 0;
 }
 
 function normalizeDateValue_(value) {

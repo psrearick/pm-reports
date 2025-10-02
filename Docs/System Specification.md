@@ -69,6 +69,7 @@ This document captures the agreed-upon behavior for the automated Google Sheets 
 - Export routines create (or reuse) a folder inside the Output directory based on the configured `Exports Folder Name` (or the Output folder directly if blank).
 - For each report spreadsheet, an export subfolder named after the report label (with the same versioning rules) stores generated PDFs: one per property and a `Summary` file.
 - Temporary Drive files created during export are cleaned up once PDFs are saved.
+- The master workbook exposes an "Export Report (from log)" action that prompts for a report label (or defaults to the most recent entry in `Report Log`) and triggers the PDF routine without opening the target report manually.
 
 ## Logging & Notifications
 
