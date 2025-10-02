@@ -1,9 +1,16 @@
 Attribute,Value
 Credits Document,1SuU28xz...
+Credits Folder ID,
 Credits Date,Date paid
 Credits Amount,Amount paid
 Credits Property,Property name
 Credits Unit,Unit
 Credits Category,Category
 Credits Subcategory,Sub-category
+Credits Status,
+Credits Method,
+Credits Payer,
 Add Credits Sheet,FALSE
+Output Folder ID,
+Reports Folder Name,
+Exports Folder Name,
