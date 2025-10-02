@@ -6,6 +6,7 @@ function onOpen() {
     .addItem('Load Staging Data', 'handleLoadStaging_')
     .addItem('Save Staging Data', 'handleSaveStaging_')
     .addItem('Generate Report', 'handleGenerateReport_')
+    .addItem('Export Report (from log)', 'handleExportReport_')
     .addToUi();
 }
 
@@ -39,6 +40,13 @@ function handleGenerateReport_() {
   });
 }
 
+function handleExportReport_() {
+  runWithUiFeedback_('Preparing export...', function () {
+    const exported = exportReportByLabel();
+    return exported ? 'Export completed.' : 'Export cancelled or not found.';
+  });
+}
+
 function runWithUiFeedback_(activityMessage, action) {
   const spreadsheet = SpreadsheetApp.getActive();
   showToast_(spreadsheet, activityMessage, 5);
@@ -61,4 +69,3 @@ function addExportMenuToSpreadsheet_(spreadsheet) {
     { name: 'Export All to PDF', functionName: 'exportActiveReportToPdf' }
   ]);
 }
-

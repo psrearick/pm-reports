@@ -15,4 +15,4 @@
 | 11 | Hook up custom menu actions and user feedback | Done | Added `Menu.gs` and linked export menu creation |
 | 12 | Add logging sheets (`Import Log`, `Report Log`) updates | Done | Imports log in `CreditsImport.gs`; report logging added in `Reports.gs` |
 | 13 | Perform integration testing / dry runs | Not Started | |
-| 14 | Final documentation touch-ups | In Progress | Added `Docs/Setup Guide.md` |
+| 14 | Final documentation touch-ups | In Progress | Updated setup guide and system spec for control sheet & exports |

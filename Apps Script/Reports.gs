@@ -4,7 +4,7 @@ function generateReport() {
     throw new Error('Report Label is required.');
   }
   const folders = ensureDestinationFolders();
-  const reportData = buildReportData_(settings.startDate, settings.endDate, settings.adminFeeOverride);
+  const reportData = buildReportData_(settings.startDate, settings.endDate, settings.adminFeeOverride, settings.property);
   if (!reportData.properties.length) {
     throw new Error('No transactions found for the selected period.');
   }
@@ -22,10 +22,11 @@ function generateReport() {
 }
 
 function getReportSettings_() {
-  const sheet = getSheetByName_(SHEET_NAMES.STAGING);
+  const sheet = getSheetByName_(STAGING_CONTROL.SHEET);
   const startDate = parseOptionalDate_(sheet.getRange(STAGING_CONTROL.START_DATE_CELL).getValue());
   const endDate = parseOptionalDate_(sheet.getRange(STAGING_CONTROL.END_DATE_CELL).getValue());
   const reportLabel = normalizeStringValue_(sheet.getRange(STAGING_CONTROL.REPORT_LABEL_CELL).getValue());
+  const property = normalizeStringValue_(sheet.getRange(STAGING_CONTROL.PROPERTY_CELL).getValue());
   const adminOverrideCell = sheet.getRange(STAGING_CONTROL.ADMIN_FEE_OVERRIDE_CELL).getValue();
   let adminFeeOverride = null;
   if (adminOverrideCell !== '' && adminOverrideCell !== null) {
@@ -35,17 +36,18 @@ function getReportSettings_() {
     startDate: startDate,
     endDate: endDate,
     reportLabel: reportLabel,
-    adminFeeOverride: adminFeeOverride
+    adminFeeOverride: adminFeeOverride,
+    property: property
   };
 }
 
-function buildReportData_(startDate, endDate, adminFeeOverride) {
+function buildReportData_(startDate, endDate, adminFeeOverride, propertyFilter) {
   const propertyConfigs = getPropertiesConfig();
   const propertyMap = {};
   propertyConfigs.forEach(function (config) {
     propertyMap[config.name] = config;
   });
-  const transactionsByProperty = collectTransactionsForRange_(startDate, endDate, propertyMap);
+  const transactionsByProperty = collectTransactionsForRange_(startDate, endDate, propertyMap, propertyFilter);
   const properties = [];
   Object.keys(transactionsByProperty).forEach(function (propertyName) {
     const propertyTransactions = transactionsByProperty[propertyName];
@@ -74,7 +76,7 @@ function buildReportData_(startDate, endDate, adminFeeOverride) {
   };
 }
 
-function collectTransactionsForRange_(startDate, endDate, propertyMap) {
+function collectTransactionsForRange_(startDate, endDate, propertyMap, propertyFilter) {
   const sheet = getSheetByName_(SHEET_NAMES.TRANSACTIONS);
   const lastRow = sheet.getLastRow();
   const lastColumn = sheet.getLastColumn();
@@ -86,6 +88,8 @@ function collectTransactionsForRange_(startDate, endDate, propertyMap) {
   const headerIndex = getHeaderIndexMap_(headers);
   const range = sheet.getRange(2, 1, lastRow - 1, lastColumn);
   const values = range.getValues();
+  const properties = propertyFilter ? ensureArray_(propertyFilter).filter(function (item) { return !!normalizeStringValue_(item); }) : [];
+  const matchAllProperties = properties.length === 0;
   values.forEach(function (row) {
     if (row.every(isBlank_)) {
       return;
@@ -100,6 +104,9 @@ function collectTransactionsForRange_(startDate, endDate, propertyMap) {
     }
     const propertyName = row[headerIndex['Property']];
     if (!propertyName) {
+      return;
+    }
+    if (!matchAllProperties && properties.indexOf(propertyName) === -1) {
       return;
     }
     const transaction = {

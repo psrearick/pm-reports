@@ -1,9 +1,7 @@
 function loadStagingData() {
   const controls = getStagingControls_();
-  if (!controls.property) {
-    throw new Error('Property selection is required before loading data.');
-  }
-  const masterRows = fetchMasterTransactions_(controls.property, controls.startDate, controls.endDate, true);
+  const propertyFilter = controls.property ? [controls.property] : null;
+  const masterRows = fetchMasterTransactions_(propertyFilter, controls.startDate, controls.endDate, true);
   const rowsToDisplay = controls.showDeleted ? masterRows : masterRows.filter(function (record) {
     return !toBool(record.data['Deleted']);
   });
@@ -12,11 +10,9 @@ function loadStagingData() {
 
 function saveStagingData() {
   const controls = getStagingControls_();
-  if (!controls.property) {
-    throw new Error('Property selection is required before saving data.');
-  }
   const stagingRows = readStagingRows_();
-  const masterRecords = fetchMasterTransactions_(controls.property, controls.startDate, controls.endDate, true);
+  const propertyFilter = controls.property ? [controls.property] : null;
+  const masterRecords = fetchMasterTransactions_(propertyFilter, controls.startDate, controls.endDate, true);
   const masterById = {};
   masterRecords.forEach(function (record) {
     if (record.data['Transaction ID']) {
@@ -99,7 +95,7 @@ function saveStagingData() {
 }
 
 function getStagingControls_() {
-  const sheet = getSheetByName_(SHEET_NAMES.STAGING);
+  const sheet = getSheetByName_(STAGING_CONTROL.SHEET);
   const property = normalizeStringValue_(sheet.getRange(STAGING_CONTROL.PROPERTY_CELL).getValue());
   const startDate = parseOptionalDate_(sheet.getRange(STAGING_CONTROL.START_DATE_CELL).getValue());
   const endDate = parseOptionalDate_(sheet.getRange(STAGING_CONTROL.END_DATE_CELL).getValue());
@@ -123,7 +119,7 @@ function parseOptionalDate_(value) {
   return isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function fetchMasterTransactions_(property, startDate, endDate, includeDeleted) {
+function fetchMasterTransactions_(propertyFilter, startDate, endDate, includeDeleted) {
   const sheet = getSheetByName_(SHEET_NAMES.TRANSACTIONS);
   const lastRow = sheet.getLastRow();
   const lastColumn = sheet.getLastColumn();
@@ -134,6 +130,8 @@ function fetchMasterTransactions_(property, startDate, endDate, includeDeleted) 
   const values = range.getValues();
   const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
   const headerIndex = getHeaderIndexMap_(headers);
+  const properties = propertyFilter ? ensureArray_(propertyFilter).filter(function (item) { return !!normalizeStringValue_(item); }) : [];
+  const matchAllProperties = properties.length === 0;
   const results = [];
   for (let i = 0; i < values.length; i++) {
     const rowValues = values[i];
@@ -145,7 +143,10 @@ function fetchMasterTransactions_(property, startDate, endDate, includeDeleted) 
       const index = headerIndex[header];
       data[header] = index !== undefined ? rowValues[index] : '';
     });
-    if (!data['Property'] || data['Property'] !== property) {
+    if (!data['Property']) {
+      continue;
+    }
+    if (!matchAllProperties && properties.indexOf(data['Property']) === -1) {
       continue;
     }
     if (!withinDateRange_(data['Date'], startDate, endDate)) {
@@ -178,10 +179,9 @@ function withinDateRange_(value, startDate, endDate) {
 
 function writeRowsToStaging_(rows) {
   const sheet = getSheetByName_(SHEET_NAMES.STAGING);
-  const lastColumn = Math.max(sheet.getLastColumn(), STAGING_HEADERS.length);
   sheet.getRange(1, 1, 1, STAGING_HEADERS.length).setValues([STAGING_HEADERS]);
   if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, lastColumn).clearContent();
+    sheet.getRange(2, 1, sheet.getLastRow() - 1, STAGING_HEADERS.length).clearContent();
   }
   if (!rows.length) {
     return;
@@ -205,13 +205,12 @@ function writeRowsToStaging_(rows) {
 function readStagingRows_() {
   const sheet = getSheetByName_(SHEET_NAMES.STAGING);
   const lastRow = sheet.getLastRow();
-  const lastColumn = sheet.getLastColumn();
   if (lastRow < 2) {
     return [];
   }
-  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const headers = sheet.getRange(1, 1, 1, STAGING_HEADERS.length).getValues()[0];
   const headerIndex = getHeaderIndexMap_(headers);
-  const range = sheet.getRange(2, 1, lastRow - 1, lastColumn);
+  const range = sheet.getRange(2, 1, lastRow - 1, STAGING_HEADERS.length);
   const values = range.getValues();
   const rows = [];
   values.forEach(function (valueRow) {
@@ -233,17 +232,21 @@ function normalizeStagingRow_(row, fallbackProperty) {
   TRANSACTION_HEADERS.forEach(function (header) {
     transaction[header] = row[header] !== undefined ? row[header] : '';
   });
-  if (!transaction['Property']) {
+  if (!transaction['Property'] && fallbackProperty) {
     transaction['Property'] = fallbackProperty;
   }
+  transaction['Property'] = normalizeStringValue_(transaction['Property']);
+  if (!transaction['Property']) {
+    throw new Error('Each row must specify a Property.');
+  }
   transaction['Date'] = normalizeDateValue_(transaction['Date']);
-  transaction['Credits'] = parseCurrency_(transaction['Credits']);
-  transaction['Fees'] = parseCurrency_(transaction['Fees']);
-  transaction['Debits'] = parseCurrency_(transaction['Debits']);
-  transaction['Security Deposits'] = parseCurrency_(transaction['Security Deposits']);
+  transaction['Credits'] = isBlank_(row['Credits']) ? '' : parseCurrency_(row['Credits']);
+  transaction['Fees'] = isBlank_(row['Fees']) ? '' : parseCurrency_(row['Fees']);
+  transaction['Debits'] = isBlank_(row['Debits']) ? '' : parseCurrency_(row['Debits']);
+  transaction['Security Deposits'] = isBlank_(row['Security Deposits']) ? '' : parseCurrency_(row['Security Deposits']);
   transaction['Markup Included'] = toBool(transaction['Markup Included']);
   transaction['Deleted'] = toBool(transaction['Deleted']);
-  transaction['Markup Revenue'] = parseCurrency_(transaction['Markup Revenue']);
+  transaction['Markup Revenue'] = isBlank_(row['Markup Revenue']) ? '' : parseCurrency_(row['Markup Revenue']);
   transaction['Deleted Timestamp'] = normalizeDateValue_(transaction['Deleted Timestamp']);
   return transaction;
 }

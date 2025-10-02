@@ -36,12 +36,14 @@ This document captures the agreed-upon behavior for the automated Google Sheets 
 
 - `Transactions (Master)` holds the canonical dataset. Every record carries:
   - `Transaction ID` (UUID), `Deleted` (boolean flag), `Deleted Timestamp`, etc., with additional hidden columns to support soft deletes.
+- `Entry Controls` stores the user-facing controls for start/end dates, optional property filter, report label, and checkbox overrides. Values from this sheet drive both staging and report generation.
 - `Entry & Edit (Staging)` loads a filtered view based on property/date and includes the following behaviors:
   - Non-deleted rows appear by default.
   - A "Show Deleted" checkbox toggles visibility of soft-deleted rows; when visible they display as checked in the `Deleted` column.
   - The staging grid includes two checkbox columns: `Deleted` (soft delete) and `Delete Permanently` (hard delete on sync).
   - Removing a row from the staging sheet during editing toggles the `Deleted` flag when changes are saved.
   - Unchecking `Deleted` while saving reinstates the record in the master sheet.
+- Leaving the `Property` control blank loads/saves data for all properties at once; selecting a property limits the staging grid (and subsequent save operations) to that property only.
 - Airbnb detection uses the `Internal Notes` field; if a property has `Has Airbnb = TRUE` and the notes contain `airbnb` (case-insensitive), the amount contributes to the Airbnb total for that property.
 
 ## Reporting & Template System
@@ -55,11 +57,12 @@ This document captures the agreed-upon behavior for the automated Google Sheets 
 
 ## Report Generation & Export
 
-- Report creation reads from `Entry & Edit (Staging)` after changes are saved to master.
+- Report creation reads from `Entry & Edit (Staging)` after changes are saved to master, using the same control values from `Entry Controls` (date range, optional property filter, admin-fee override).
 - A new Google Sheets report is created under the Output folder (or inside the `Reports Folder Name` subfolder if configured).
 - Soft-deleted records are excluded from report data by default; permanently deleted rows are removed entirely.
 - Admin fees: during report generation a user-facing control determines whether to apply each property's `Admin Fee`. By default the checkbox state uses the `Admin Fee Enabled` value from the properties sheet.
 - Versioned naming: when generating report files or export folders, if a file named `<Report Label>` already exists, the script appends `_2`. If `_2` already exists, it increments the highest suffix (`_3`, `_4`, etc.) without nesting.
+- Reports can be exported to PDF either from the generated spreadsheet (custom Export menu) or from the master workbook via the "Export Report (from log)" action, which reads the latest entries in `Report Log`.
 
 ## Export to PDF
 
@@ -72,4 +75,3 @@ This document captures the agreed-upon behavior for the automated Google Sheets 
 - Processed credit files (ID, name, timestamp, rows imported) are appended to an `Import Log` sheet in the master workbook to avoid double processing.
 - Report generation events append to `Report Log` with additional metadata (version suffixes, admin fee state, row counts).
 - Errors raise user-visible alerts (toast or modal). Success notifications are optional and can be added later without architectural changes.
-

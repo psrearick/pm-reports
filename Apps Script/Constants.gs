@@ -3,6 +3,7 @@ const SHEET_NAMES = {
   PROPERTIES: 'Properties',
   TRANSACTIONS: 'Transactions (Master)',
   STAGING: 'Entry & Edit (Staging)',
+  CONTROL: 'Entry Controls',
   IMPORT_LOG: 'Import Log',
   REPORT_LOG: 'Report Log',
   TEMPLATE_BODY: 'ReportBodyTemplate',
@@ -59,12 +60,13 @@ const TRANSACTION_HEADERS = [
 const STAGING_HEADERS = TRANSACTION_HEADERS.concat(['Delete Permanently']);
 
 const STAGING_CONTROL = {
-  START_DATE_CELL: 'O2',
-  END_DATE_CELL: 'O3',
-  PROPERTY_CELL: 'O4',
-  REPORT_LABEL_CELL: 'O5',
-  SHOW_DELETED_CELL: 'O6',
-  ADMIN_FEE_OVERRIDE_CELL: 'O7'
+  SHEET: SHEET_NAMES.CONTROL,
+  START_DATE_CELL: 'B2',
+  END_DATE_CELL: 'B3',
+  PROPERTY_CELL: 'B4',
+  REPORT_LABEL_CELL: 'B5',
+  SHOW_DELETED_CELL: 'B6',
+  ADMIN_FEE_OVERRIDE_CELL: 'B7'
 };
 
 const TEMPLATE_TOKENS = {

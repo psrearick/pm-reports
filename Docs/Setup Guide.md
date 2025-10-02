@@ -45,23 +45,25 @@ This guide walks through creating the entire property management reporting syste
 ### 3.2 Entry & Edit (Staging)
 
 1. Add a new sheet named Entry & Edit (Staging).
-2. Copy the headers A1:N1 from `Transactions (Master)` and paste into row 1 (cells A1–N1) of `Entry & Edit (Staging)`.
-3. In cell O1, type `Delete Permanently`. This column is managed by the script.
-4. Set up the control panel in column `N/O` as follows:
-    - N2 `Start Date`
-    - N3 `End Date`
-    - N4 `Property`
-    - N5 `Report Label`
-    - N6 `Show Deleted`
-    - N7 `Admin Fee Override`
-    - O2 Leave blank (user enters start date)
-    - O3 Leave blank (user enters end date)
-    - O4 Leave blank; add Data Validation > Dropdown from range when properties are configured (`Properties!A2:A`).
-    - O5 Leave blank (user enters report label, e.g., `Sep 2025 Statements`).
-    - O6 Insert a checkbox.
-    - O7 Insert a checkbox. When checked, admin fees are forced ON; unchecked forces OFF; leaving blank defers to property defaults.
+2. Copy the headers A1:N1 from `Transactions (Master)` and paste into row 1 (cells A1–N1).
+3. In cell O1, type `Delete Permanently`. The script fills this column with checkboxes when data is loaded.
+4. Leave the remainder of the sheet empty; the script will only clear and write within columns A–O, leaving anything to the right (notes, helper formulas, etc.) untouched.
 
-### 3.3 Properties
+### 3.3 Entry Controls
+
+1. Add a sheet named Entry Controls.
+2. Enter the following labels in column A, leaving column B blank for user input:
+    - A2 `Start Date`
+    - A3 `End Date`
+    - A4 `Property`
+    - A5 `Report Label`
+    - A6 `Show Deleted`
+    - A7 `Admin Fee Override`
+3. Format cells B6 and B7 as checkboxes. When Admin Fee Override is left blank, the system uses each property's default. Checked forces admin fees on; unchecked forces them off.
+4. (Optional) Apply a dropdown on B4 that references `Properties!A2:A` for faster property selection.
+5. The script reads control values from column B. Leave the Property cell blank to load/edit/export all properties; enter a property name to work with that property only.
+
+### 3.4 Properties
 
 1. Add a sheet named Properties.
 2. Enter the headers in row 1:
@@ -92,7 +94,7 @@ This guide walks through creating the entire property management reporting syste
 
 4. Format `MAF`, `Markup`, `Airbnb` as decimals; `Has Airbnb` and `Admin Fee Enabled` as checkboxes; `Admin Fee` as currency (optional).
 
-### 3.4 Configuration
+### 3.5 Configuration
 
 1. Add a sheet named Configuration.
 2. Enter headers: `A1` `Setting`, `B1` `Value`.
@@ -120,10 +122,10 @@ This guide walks through creating the entire property management reporting syste
 
 4. Ensure `Add Credits Sheet` is a plain text `TRUE/FALSE` string (or use checkbox, both work).
 
-### 3.5 Report Log
+### 3.6 Report Log
 
 1. Add a sheet named Report Log.
-2. Enter headers row 1 (A1–H1):
+2. Enter headers row 1 (A1–I1):
     - `Timestamp`
     - `Report Label`
     - `Version`
@@ -136,7 +138,7 @@ This guide walks through creating the entire property management reporting syste
 
     (The script will append rows automatically.)
 
-### 3.6 Import Log
+### 3.7 Import Log
 
 1. Add a sheet named Import Log.
 2. Enter headers row 1 (A1–F1):
@@ -227,10 +229,11 @@ Create three hidden template tabs. These must match the names expected by the sc
 
 1. Use the custom menu PM Reports:
     - Import Credits – Processes configured files, appends new transactions, and logs results.
-    - Load Staging Data – Requires `Property`, optional dates; loads records into `Entry & Edit (Staging)`.
-    - Save Staging Data – Syncs staging changes back to the master sheet, handling soft deletes and new entries.
-    - Generate Report – Builds a versioned Google Sheets report under the configured `Reports` folder and logs the run.
-2. In generated reports, use the Export > Export All to PDF menu to create PDFs inside the configured `Exports` folder (suffixed folders handle naming collisions).
+    - Load Staging Data – Reads the controls on **Entry Controls**. Leave `Property` blank to load all properties, or select a single property to focus the staging grid.
+    - Save Staging Data – Pushes changes back to the master sheet for the filtered scope (all properties or the single property).
+    - Generate Report – Creates a versioned Google Sheets report using the same control values and logs the run.
+    - Export Report (from log) – Prompts for a report label (or uses the most recent entry) and creates PDFs in the configured `Exports` folder.
+2. In generated reports, you can still use the Export > Export All to PDF menu (added automatically to each report) to produce PDFs directly from the report spreadsheet.
 
 ## 9. Logs & Maintenance
 
