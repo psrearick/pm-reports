@@ -15,7 +15,7 @@ function applyTemplateContext_(sheet, context) {
   const warnings = [];
   processRowBlocks_(sheet, context, warnings);
   processConditionalBlocks_(sheet, context);
-  replaceScalarPlaceholders_(sheet, context.placeholders, warnings);
+  replaceScalarPlaceholders_(sheet, context.placeholders, context.flags, warnings);
   return warnings;
 }
 
@@ -27,17 +27,18 @@ function processRowBlocks_(sheet, context, warnings) {
     }
     const markerCell = matches[matches.length - 1];
     const markerValue = markerCell.getValue();
-    const match = markerValue.match(/^\[\[ROW\s+([A-Za-z0-9_\-]+)\]\]$/);
+    const match = markerValue.match(/^\[\[ROW\s+([A-Za-z0-9_\-]+)(.*?)\]\]$/);
     if (!match) {
       markerCell.clear();
       continue;
     }
     const blockName = match[1];
-    renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings);
+    const attributes = parseRowAttributes_(match[2]);
+    renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings, attributes);
   }
 }
 
-function renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings) {
+function renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings, attributes) {
   const startRow = markerCell.getRow();
   const lastColumn = sheet.getLastColumn() || 1;
   const endRow = findMarkerRow_(sheet, startRow + 1, '[[ENDROW]]');
@@ -53,7 +54,8 @@ function renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings
   }
   const templateRange = sheet.getRange(templateStartRow, 1, templateRowCount, lastColumn);
   const templateValues = templateRange.getValues();
-  const blockData = context.rows[blockName] || [];
+  let blockData = context.rows[blockName] || [];
+  blockData = transformBlockData_(blockData, attributes || {});
   if (!blockData.length) {
     sheet.deleteRows(templateStartRow, templateRowCount);
   } else {
@@ -68,7 +70,7 @@ function renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings
       if (i > 0) {
         templateRange.copyTo(targetRange, { contentsOnly: false });
       }
-      const renderedValues = renderTemplateBlockValues_(templateValues, blockData[i], context.placeholders, warnings);
+      const renderedValues = renderTemplateBlockValues_(templateValues, blockData[i], context.placeholders, context.flags, warnings);
       targetRange.setValues(renderedValues);
     }
   }
@@ -79,13 +81,13 @@ function renderRowBlockInstance_(sheet, markerCell, blockName, context, warnings
   sheet.deleteRow(startRow);
 }
 
-function renderTemplateBlockValues_(templateValues, rowData, placeholders, warnings) {
+function renderTemplateBlockValues_(templateValues, rowData, placeholders, flags, warnings) {
   const output = [];
   for (let r = 0; r < templateValues.length; r++) {
     const row = templateValues[r];
     const renderedRow = [];
     for (let c = 0; c < row.length; c++) {
-      renderedRow.push(replaceValuePlaceholders_(row[c], rowData, placeholders, warnings));
+      renderedRow.push(replaceValuePlaceholders_(row[c], rowData, placeholders, flags, warnings));
     }
     output.push(renderedRow);
   }
@@ -121,7 +123,7 @@ function processConditionalBlocks_(sheet, context) {
   }
 }
 
-function replaceScalarPlaceholders_(sheet, placeholders, warnings) {
+function replaceScalarPlaceholders_(sheet, placeholders, flags, warnings) {
   const range = sheet.getDataRange();
   if (!range) {
     return;
@@ -131,7 +133,7 @@ function replaceScalarPlaceholders_(sheet, placeholders, warnings) {
   for (let r = 0; r < values.length; r++) {
     for (let c = 0; c < values[r].length; c++) {
       const original = values[r][c];
-      const rendered = replaceValuePlaceholders_(original, null, placeholders, warnings);
+      const rendered = replaceValuePlaceholders_(original, null, placeholders, flags, warnings);
       if (rendered !== original) {
         needsUpdate = true;
         values[r][c] = rendered;
@@ -143,7 +145,7 @@ function replaceScalarPlaceholders_(sheet, placeholders, warnings) {
   }
 }
 
-function replaceValuePlaceholders_(value, rowData, placeholders, warnings) {
+function replaceValuePlaceholders_(value, rowData, placeholders, flags, warnings) {
   if (value === null || value === undefined) {
     return value;
   }
@@ -166,7 +168,17 @@ function replaceValuePlaceholders_(value, rowData, placeholders, warnings) {
     return '';
   });
   output = output.replace(/\[([^\]]+)\]/g, function (_, token) {
-    const key = token.trim();
+    const parsed = parsePlaceholderToken_(token);
+    if (parsed.condition) {
+      const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, parsed.condition) ? flags[parsed.condition] : false;
+      if (!toBool(flagValue)) {
+        return '';
+      }
+    }
+    const key = parsed.key;
+    if (rowData && Object.prototype.hasOwnProperty.call(rowData, key)) {
+      return rowData[key];
+    }
     if (placeholders && Object.prototype.hasOwnProperty.call(placeholders, key)) {
       return placeholders[key];
     }
@@ -187,4 +199,110 @@ function findMarkerRow_(sheet, startRow, markerValue) {
     }
   }
   return null;
+}
+
+function parseRowAttributes_(attributeString) {
+  const attributes = {};
+  if (!attributeString) {
+    return attributes;
+  }
+  const parts = attributeString.trim().split(/\s+/);
+  parts.forEach(function (part) {
+    if (!part) {
+      return;
+    }
+    const match = part.match(/^([A-Za-z0-9_\-]+)=(.+)$/);
+    if (match) {
+      attributes[match[1]] = match[2];
+    }
+  });
+  return attributes;
+}
+
+function transformBlockData_(blockData, attributes) {
+  let data = Array.isArray(blockData) ? blockData.slice() : [];
+  if (!data.length) {
+    return data;
+  }
+  if (attributes.group || attributes.sort) {
+    data = sortBlockData_(data, attributes);
+  }
+  if (attributes.group) {
+    data = applyGroupingForDisplay_(data, attributes.group);
+  }
+  return data;
+}
+
+function sortBlockData_(data, attributes) {
+  const sortOrder = [];
+  if (attributes.group) {
+    sortOrder.push(attributes.group);
+  }
+  if (attributes.sort) {
+    sortOrder.push(attributes.sort);
+  }
+  if (!sortOrder.length) {
+    return data.slice();
+  }
+  return data.slice().sort(function (a, b) {
+    for (let i = 0; i < sortOrder.length; i++) {
+      const field = sortOrder[i];
+      const valueA = getComparableValue_(a[field]);
+      const valueB = getComparableValue_(b[field]);
+      if (valueA < valueB) {
+        return -1;
+      }
+      if (valueA > valueB) {
+        return 1;
+      }
+    }
+    return 0;
+  });
+}
+
+function applyGroupingForDisplay_(data, groupField) {
+  let lastGroupKey = null;
+  return data.map(function (item) {
+    const clone = Object.assign({}, item);
+    const rawValue = item[groupField];
+    const groupKey = rawValue === null || rawValue === undefined ? '' : rawValue.toString();
+    if (lastGroupKey !== null && groupKey === lastGroupKey) {
+      clone[groupField] = '';
+    } else {
+      lastGroupKey = groupKey;
+    }
+    return clone;
+  });
+}
+
+function getComparableValue_(value) {
+  if (value instanceof Date) {
+    return value.getTime();
+  }
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (value === null || value === undefined) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  const parsedDate = new Date(value);
+  if (!isNaN(parsedDate.getTime())) {
+    return parsedDate.getTime();
+  }
+  const numeric = Number(value);
+  if (!isNaN(numeric)) {
+    return numeric;
+  }
+  return value.toString().toLowerCase();
+}
+
+function parsePlaceholderToken_(token) {
+  const match = token.match(/^\s*(.+?)(?:\s+if\s*=\s*([A-Za-z0-9_\-]+))?\s*$/);
+  if (!match) {
+    return { key: token.trim(), condition: null };
+  }
+  return {
+    key: match[1].trim(),
+    condition: match[2] ? match[2].trim() : null
+  };
 }

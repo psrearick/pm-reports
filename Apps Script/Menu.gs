@@ -63,9 +63,3 @@ function runWithUiFeedback_(activityMessage, action) {
 function showToast_(spreadsheet, message, seconds) {
   spreadsheet.toast(message, 'PM Reports', seconds || 5);
 }
-
-function addExportMenuToSpreadsheet_(spreadsheet) {
-  spreadsheet.addMenu('Export', [
-    { name: 'Export All to PDF', functionName: 'exportActiveReportToPdf' }
-  ]);
-}

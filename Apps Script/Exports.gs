@@ -1,8 +1,3 @@
-function exportActiveReportToPdf() {
-  const spreadsheet = SpreadsheetApp.getActive();
-  exportSpreadsheetToFolder_(spreadsheet, spreadsheet.getName());
-}
-
 function exportReportByLabel() {
   const sheet = getSheetByName_(SHEET_NAMES.REPORT_LOG);
   const ui = SpreadsheetApp.getUi();
