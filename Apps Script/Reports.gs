@@ -223,6 +223,7 @@ function renderPropertySheets_(spreadsheet, reportData, settings) {
         'TOTAL SECURITY DEPOSITS': formatCurrency_(property.totals.totalSecurityDeposits),
         'TOTAL DEBITS': formatCurrency_(property.totals.totalDebits),
         'COMBINED CREDITS': formatCurrency_(property.totals.combinedCredits),
+        'TOTAL RECEIPTS': formatCurrency_(property.totals.combinedCredits),
         'DUE TO OWNERS': formatCurrency_(property.totals.dueToOwners),
         'TOTAL TO PM': formatCurrency_(property.totals.totalToPm),
         'UNIT COUNT': property.totals.unitCount,
