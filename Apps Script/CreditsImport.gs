@@ -22,7 +22,7 @@ function importCredits() {
       if (!records.length) {
         results.push({ file: file, skipped: true, reason: 'No data rows detected' });
         logCreditImport_(importLogSheet, file, lastUpdated, 0, 'No data rows detected');
-        continue;
+        return;
       }
       const transactions = records.map(function (record) {
         return buildTransactionRowFromCredit_(record);
