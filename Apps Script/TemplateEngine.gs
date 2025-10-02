@@ -156,6 +156,31 @@ function replaceValuePlaceholders_(value, rowData, placeholders, flags, warnings
     return value;
   }
   let output = value;
+  let clearCell = false;
+
+  output = output.replace(/\[if=([A-Za-z0-9_\-]+)\]([\s\S]*?)\[\/if\]/g, function (_, condition, content) {
+    const flagValue = getFlagValue_(flags, condition);
+    if (!toBool(flagValue)) {
+      clearCell = true;
+      return '';
+    }
+    return content;
+  });
+
+  output = output.replace(/\[(?:"([^"]*)"|'([^']*)'|([^|\]]+))\s*\|\s*if=([A-Za-z0-9_\-]+)\]/g, function (_, doubled, singled, plain, condition) {
+    const text = (doubled !== undefined ? doubled : singled !== undefined ? singled : plain || '').trim();
+    const flagValue = getFlagValue_(flags, condition);
+    return toBool(flagValue) ? text : '';
+  });
+
+  output = output.replace(/\[if=([A-Za-z0-9_\-]+)\]/g, function (_, condition) {
+    const flagValue = getFlagValue_(flags, condition);
+    if (!toBool(flagValue)) {
+      clearCell = true;
+    }
+    return '';
+  });
+
   output = output.replace(/\{([^}]+)\}/g, function (_, token) {
     const key = token.trim();
     if (rowData && Object.prototype.hasOwnProperty.call(rowData, key)) {
@@ -169,12 +194,12 @@ function replaceValuePlaceholders_(value, rowData, placeholders, flags, warnings
   });
   output = output.replace(/\[([^\]]+)\]/g, function (_, token) {
     const parsed = parsePlaceholderToken_(token);
+    if (parsed.isControlOnly) {
+      return '';
+    }
     if (parsed.condition) {
-      const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, parsed.condition) ? flags[parsed.condition] : false;
+      const flagValue = getFlagValue_(flags, parsed.condition);
       if (!toBool(flagValue)) {
-        if (parsed.isBlock) {
-          return '';
-        }
         return '';
       }
     }
@@ -188,10 +213,8 @@ function replaceValuePlaceholders_(value, rowData, placeholders, flags, warnings
     warnings.push('Missing value for [' + key + ']');
     return '';
   });
-  if (parsedAttachmentRegex_.test(output)) {
-    output = processInlineConditionalBlocks_(output, flags);
-  }
-  return output;
+
+  return clearCell ? '' : output;
 }
 
 function findMarkerRow_(sheet, startRow, markerValue) {
@@ -230,18 +253,19 @@ function transformBlockData_(blockData, attributes) {
   if (!data.length) {
     return data;
   }
-  data = sortBlockData_(data, attributes);
-  data = applyGroupingForDisplay_(data, attributes.group);
+  const resolved = resolveAttributeFields_(data[0], attributes);
+  data = sortBlockData_(data, resolved);
+  data = applyGroupingForDisplay_(data, resolved.groupField);
   return data;
 }
 
 function sortBlockData_(data, attributes) {
   const sortOrder = [];
-  if (attributes.group) {
-    sortOrder.push({ field: attributes.group, secondary: false });
+  if (attributes.groupField) {
+    sortOrder.push({ field: attributes.groupField });
   }
-  if (attributes.sort) {
-    sortOrder.push({ field: attributes.sort, secondary: true });
+  if (attributes.sortField) {
+    sortOrder.push({ field: attributes.sortField });
   }
   if (!sortOrder.length) {
     return data.slice();
@@ -264,15 +288,21 @@ function sortBlockData_(data, attributes) {
 }
 
 function applyGroupingForDisplay_(data, groupField) {
+  if (!groupField) {
+    return data.slice();
+  }
   let lastGroupKey = null;
+  let hasLastGroupValue = false;
   return data.map(function (item) {
     const clone = Object.assign({}, item);
     const rawValue = item[groupField];
     const groupKey = rawValue === null || rawValue === undefined ? '' : rawValue.toString();
-    if (lastGroupKey !== null && groupKey === lastGroupKey) {
+    const hasValue = groupKey !== '';
+    if (hasLastGroupValue && hasValue && groupKey === lastGroupKey) {
       clone[groupField] = '';
     } else {
       lastGroupKey = groupKey;
+      hasLastGroupValue = hasValue;
     }
     return clone;
   });
@@ -302,38 +332,71 @@ function getComparableValue_(value) {
 function parsePlaceholderToken_(token) {
   const blockMatch = token.match(/^\s*\/if\s*$/);
   if (blockMatch) {
-    return { key: '', condition: null, isBlockEnd: true, isBlock: false };
+    return { key: '', condition: null, isBlockEnd: true, isBlock: false, isControlOnly: true };
   }
   const inlineBlockMatch = token.match(/^\s*if\s*=\s*([A-Za-z0-9_\-]+)\s*$/);
   if (inlineBlockMatch) {
-    return { key: '', condition: inlineBlockMatch[1], isBlockStart: true, isBlock: true };
+    return { key: '', condition: inlineBlockMatch[1], isBlockStart: true, isBlock: true, isControlOnly: true };
   }
   const inlineContentMatch = token.match(/^\s*(.+?)\s*\|\s*if\s*=\s*([A-Za-z0-9_\-]+)\s*$/);
   if (inlineContentMatch) {
-    return { key: inlineContentMatch[1].trim(), condition: inlineContentMatch[2].trim(), isBlock: true, inlineContent: inlineContentMatch[1].trim() };
+    return { key: inlineContentMatch[1].trim(), condition: inlineContentMatch[2].trim(), isBlock: true, inlineContent: inlineContentMatch[1].trim(), isControlOnly: false };
   }
   const match = token.match(/^\s*(.+?)(?:\s+if\s*=\s*([A-Za-z0-9_\-]+))?\s*$/);
   if (!match) {
-    return { key: token.trim(), condition: null, isBlock: false };
+    return { key: token.trim(), condition: null, isBlock: false, isControlOnly: false };
   }
   return {
     key: match[1].trim(),
     condition: match[2] ? match[2].trim() : null,
-    isBlock: false
+    isBlock: false,
+    isControlOnly: false
   };
 }
 
-function processInlineConditionalBlocks_(text, flags) {
-  let output = text;
-  output = output.replace(/\[if=([A-Za-z0-9_\-]+)\]\s*([\s\S]*?)\s*\[\/if\]/g, function (_, condition, content) {
-    const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, condition) ? flags[condition] : false;
-    return toBool(flagValue) ? content : '';
-  });
-  output = output.replace(/\[([^\]]+)\|\s*if=([A-Za-z0-9_\-]+)\]/g, function (_, content, condition) {
-    const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, condition) ? flags[condition] : false;
-    return toBool(flagValue) ? content : '';
-  });
-  return output;
+function resolveAttributeFields_(sampleRow, attributes) {
+  const resolved = Object.assign({}, attributes);
+  if (attributes.group) {
+    resolved.groupField = resolveFieldName_(sampleRow, attributes.group);
+  }
+  if (attributes.sort) {
+    resolved.sortField = resolveFieldName_(sampleRow, attributes.sort);
+  }
+  return resolved;
 }
 
-const parsedAttachmentRegex_ = /\[if=|\|\s*if=/;
+function resolveFieldName_(sampleRow, requested) {
+  if (!requested) {
+    return null;
+  }
+  const trimmed = requested.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const keys = sampleRow ? Object.keys(sampleRow) : [];
+  const lowered = trimmed.toLowerCase();
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (key === trimmed || key.toLowerCase() === lowered) {
+      return key;
+    }
+  }
+  return trimmed;
+}
+
+function getFlagValue_(flags, name) {
+  if (!flags) {
+    return false;
+  }
+  if (Object.prototype.hasOwnProperty.call(flags, name)) {
+    return flags[name];
+  }
+  const lowered = name.toLowerCase();
+  const keys = Object.keys(flags);
+  for (let i = 0; i < keys.length; i++) {
+    if (keys[i].toLowerCase() === lowered) {
+      return flags[keys[i]];
+    }
+  }
+  return false;
+}
