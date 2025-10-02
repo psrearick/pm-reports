@@ -1,0 +1,65 @@
+1505-1515 Franklin Park,,,,,,,,,
+202509,,,,,,,,,
+08/20/2025 - 09/19/2025,,,,,,,,,
+,,,,,,,,,
+Unit,Credits,Fees,Debits,Security Deposits,Date,Debit/Credit Explanation,Markup Included,Markup Revenue,Internal Notes
+CAM,$0.00,$0.00,$100.00,$0.00,08/28/2025,,Yes,$10.00,
+,$0.00,$0.00,$250.00,$0.00,09/02/2025,,Yes,$25.00,
+A-1,"$1,210.00",$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Stefan Koltun
+F-1,"$1,240.00",$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Amanda Rudnick
+A-2,"$1,050.00",$0.00,$0.00,$0.00,09/01/2025,Rent,,$0.00,Method: Card | Status: Success | Payer: Melissa Bates
+F-2,"$1,050.00",$0.00,$0.00,$0.00,09/01/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Trisha Landis
+A-3,"$1,305.00",$0.00,$0.00,$0.00,09/04/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Frances Taylor
+F-3,"$1,285.00",$0.00,$0.00,$0.00,08/27/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Jackalyn Fleming
+F-4,$0.00,$0.00,$14.86,$0.00,09/03/2025,,Yes,$1.49,
+A-4,"$1,025.00",$0.00,$0.00,$0.00,08/27/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Martin Yzeiri
+F-4,"$1,100.00",$0.00,$0.00,$0.00,08/21/2025,Rent,,$0.00,Method: Card | Status: Success | Payer: Ambert Sawaya
+,$0.00,$0.00,$14.86,$0.00,09/03/2025,,Yes,$1.49,
+E-5,$0.00,$0.00,$950.00,$0.00,08/29/2025,,,$0.00,
+,$0.00,$0.00,$12.00,$0.00,08/29/2025,,,$0.00,
+,$0.00,$0.00,$22.50,$0.00,09/10/2025,,,$0.00,
+,$0.00,$0.00,$7.60,$0.00,09/11/2025,,,$0.00,
+B-5,"$1,050.00",$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Brenton Richardson
+E-5,$0.00,$0.00,$22.50,$0.00,09/10/2025,,,$0.00,
+,$0.00,$0.00,$7.60,$0.00,09/11/2025,,,$0.00,
+B-6,"$1,020.00",$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Corey Montgomery
+E-6,"$1,045.00",$0.00,$0.00,$0.00,08/28/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Logan Rhodes
+E-7,$0.00,$0.00,$900.00,$0.00,08/29/2025,,,$0.00,
+,$0.00,$0.00,$12.00,$0.00,08/29/2025,,,$0.00,
+,$0.00,$0.00,$12.12,$0.00,09/10/2025,,,$0.00,
+,$0.00,$0.00,$2.22,$0.00,09/11/2025,,,$0.00,
+B-7,"$1,105.00",$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Corbin Poinier
+E-7,$0.00,$0.00,$12.12,$0.00,09/10/2025,,,$0.00,
+,$0.00,$0.00,$2.22,$0.00,09/11/2025,,,$0.00,
+E-8,$0.00,$0.00,$743.40,$0.00,08/22/2025,,Yes,$74.34,
+,$0.00,$0.00,$50.17,$0.00,09/10/2025,,,$0.00,
+,$0.00,$0.00,$6.68,$0.00,09/11/2025,,,$0.00,
+B-8,"$1,110.00",$0.00,$0.00,$0.00,09/01/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Natalie Sanchez-Carrillo
+E-8,$0.00,$0.00,$50.17,$0.00,09/10/2025,,,$0.00,
+,$0.00,$0.00,$6.68,$0.00,09/11/2025,,,$0.00,
+C-9,"$1,300.00",$0.00,$0.00,$0.00,09/01/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Lily Green
+C-10,$0.00,$0.00,$55.37,$0.00,09/10/2025,,,$0.00,
+D-10,$0.00,$0.00,$45.00,$0.00,09/02/2025,,Yes,$4.50,
+C-10,$0.00,$0.00,$500.00,$0.00,09/15/2025,,Yes,$50.00,
+CAM,$0.00,$0.00,$100.00,$0.00,09/15/2025,,Yes,$10.00,
+D-9,$652.50,$0.00,$0.00,$0.00,08/31/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Matthew Dixon
+,$652.50,$0.00,$0.00,$0.00,08/31/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Kelsey Hickman
+C-10,$455.00,$0.00,$0.00,$0.00,09/13/2025,Rent - Prorated rent,,$0.00,Method: ACH | Status: Success | Payer: Gregory Eguakhide
+D-10,$505.00,$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Francesca Mouery
+,$505.00,$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Francesca Mouery
+C-10,$0.00,$0.00,$55.37,$0.00,09/10/2025,,,$0.00,
+D-10,$0.00,$0.00,$45.00,$0.00,09/02/2025,,Yes,$4.50,
+C-10,$0.00,$0.00,$500.00,$0.00,09/15/2025,,Yes,$50.00,
+C-11,"$1,210.00",$0.00,$0.00,$0.00,08/31/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Dustin Smith
+D-11,"$1,210.00",$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: Card | Status: Success | Payer: Jungwon Lee
+C-12,$950.00,$0.00,$0.00,$0.00,08/29/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: DeAnthony Morris
+D-12,"$1,010.00",$0.00,$0.00,$0.00,09/01/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Jessica Lindsey
+CAM,$0.00,$0.00,$250.00,$0.00,09/02/2025,,Yes,$25.00,
+,$0.00,$0.00,$100.00,$0.00,09/15/2025,,Yes,$10.00,
+Garage,$100.00,$0.00,$0.00,$0.00,08/27/2025,Rent,,$0.00,Method: ACH | Status: Success | Payer: Reece Iovine
+,,,,,,,,,
+Credits,Fees,Debits,Security Deposits,Markup,MAF,,,,
+"$23,145.00",$0.00,"$6,630.46",$0.00,$266.32,"$1,513.70",,,,
+,,,,,,,,,
+Combined Credits,Total Receipts,Due to Owners,Total to Stant,,,,,,
+"$23,145.00","$23,145.00","$16,514.54","$1,780.02",,,,,,
