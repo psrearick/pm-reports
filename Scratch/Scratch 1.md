@@ -1,12 +1,16 @@
-I am helping a property manager update his Google Sheets workflow. I want to use Apps Script to do this.
+Here are a response to those points and some follow up questions:
 
-- Read the "Docs/Process.md" file to understand what he is currently doing.
-- Read the "Docs/Architecture.md" file to understand the system I want to build.
-- Read the "Docs/Report Templates.md" file to see what current templates are defined. I want a templating system where these are at least somewhat flexible, using placeholders that can be filled by the script anyone in the template, not just predefined places specified in the script.
-
-- Read the "Sample/Input/Online Payment Report.csv" to understand the incoming credits file. This will be a xlsx file.
-- Read the "Sample/Input/Property Transactions.csv" to understand how he is currently recording transactions. This is in a Google Sheets document. This is restructured somewhat in the architecture document.
-
-I want to store the code that we work in the the "Apps Script" directory.
-
-Based on this information, suggest a plan to complete this project.
+- The Configuration file is have been experimenting with is here: "Data/Transactions Configuration.csv"
+- I'm not sure if using the folder option is best. We would need to be careful to avoid duplicates. If this is the path we choose, the folder could be specified in the configuration table. Just pick a key. Otherwise, it could be a list of file ids or a single file id.
+- What do you mean by naming strategy?
+- For `.xlsx` files, I think it should be set up so multiple files can be used. I'm not sure the best way to handle it. Currently, my implementation just has a single file id in the configuration table. I don't know what the best approach is. Importing everything from a specific folder is an option. We would need to be careful to avoid duplicates. In that case, the folder could be in the configuration table.
+- Transaction IDs can be UUIDs since they should be auto-generated.
+- The Properties Config is listed here: "Data/Transactions Properties.csv"
+- Markup may vary and should be defined in the Properties Config.
+- Currently in the spreadsheet Adams is just listed as having a $15 admin fee added as the MAF value for every monthly income sheet. Maybe we could add admin fee as an additional field in the properties table and just add it to every generated file to whatever to whatever the MAF is. So, for Adams, the MAF would add up to zero, then adding the admin fee would make the MAF 15. I guess when generating the output files for locations, there could be a checkbox to specify if additional admin fee should be added.
+- The Airbnb collection percentage will be in the properties config in addition to an airbnb flag. The transactions with have an "Internal Notes" field which will have "airbnb" written in it. So the airbnb total should be the sum of transaction for properties with the airbnb flag. The collection will be the percentage listed for that property. The percentage is label `Airbnb` and the flag is `Has Airbnb`.
+- How would you recommend defining the template placeholder vocabulary and rules?
+- One thing I know is the templates need a way to specify things that are looped. It will really just be filtered transactions. But I think the templates should be able to specify which row(s) are transaction templates and which columns correspond to which values. How would you suggest defining this?
+- For staging, lets use soft deletes. It should be able to have the row removed in the staging sheet and have a deleted flag in the master transactions list. When transactions are copied into the staging sheet, it should only list non-deleted rows. Perhaps, it could have a "Show Deleted" checkbox that will show the deleted rows in the output and add a "Deleted" column that defaults to checked for the deleted rows and unchecking it will remove the flag when synced with the master. It should also add a "Delete Permanently" column or something with a checkbox that will hard delete if the row remains there when synced and the permanent checkbox is checked.
+- I think the configuration table should have an "Output Folder ID" entry which is required. It's where every file is placed. There will be configuration for "Reports Folder Name" which is the name of the reports folder within the output folder where all the reports go. If it is empty, reports will go in the output folder. There will also be "Exports Folder Name" which is the name of the folder within the output where exports go. If it is empty, the exports go in the output folder. Inside the exports folder, each pdf export will be in a folder with the name of the report provided by the user on the "Entry & Edit" sheet. Within this folder, each pdf file will be the name of the property and one called "Summary".
+- There should be user-facing errors. I don't care how they are displayed. I'm not sure if there should be any notifications that are no error message, like a completed message or something. I don't really care.
