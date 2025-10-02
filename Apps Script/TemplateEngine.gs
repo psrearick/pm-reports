@@ -291,18 +291,20 @@ function applyGroupingForDisplay_(data, groupField) {
   if (!groupField) {
     return data.slice();
   }
-  let lastGroupKey = null;
+  let lastGroupKeyNormalized = null;
   let hasLastGroupValue = false;
   return data.map(function (item) {
     const clone = Object.assign({}, item);
     const rawValue = item[groupField];
-    const groupKey = rawValue === null || rawValue === undefined ? '' : rawValue.toString();
+    const groupKey = rawValue === null || rawValue === undefined ? '' : rawValue.toString().trim();
     const hasValue = groupKey !== '';
-    if (hasLastGroupValue && hasValue && groupKey === lastGroupKey) {
+    const normalizedKey = hasValue ? groupKey.toLowerCase() : '';
+    if (hasLastGroupValue && hasValue && normalizedKey === lastGroupKeyNormalized) {
       clone[groupField] = '';
     } else {
-      lastGroupKey = groupKey;
+      lastGroupKeyNormalized = normalizedKey;
       hasLastGroupValue = hasValue;
+      clone[groupField] = hasValue ? groupKey : '';
     }
     return clone;
   });
@@ -326,7 +328,7 @@ function getComparableValue_(value) {
   if (!isNaN(numeric)) {
     return numeric;
   }
-  return value.toString().toLowerCase();
+  return value.toString().trim().toLowerCase();
 }
 
 function parsePlaceholderToken_(token) {
