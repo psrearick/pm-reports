@@ -320,15 +320,28 @@ function getComparableValue_(value) {
   if (value === null || value === undefined) {
     return Number.NEGATIVE_INFINITY;
   }
-  const parsedDate = new Date(value);
-  if (!isNaN(parsedDate.getTime())) {
-    return parsedDate.getTime();
+  if (typeof value === 'boolean') {
+    return value ? 1 : 0;
   }
-  const numeric = Number(value);
-  if (!isNaN(numeric)) {
-    return numeric;
+  const stringValue = value.toString ? value.toString() : String(value);
+  const trimmed = stringValue.trim();
+  if (!trimmed) {
+    return '';
   }
-  return value.toString().trim().toLowerCase();
+  const numericCandidate = trimmed.replace(/[$,]/g, '');
+  if (/^-?\d+(?:\.\d+)?$/.test(numericCandidate)) {
+    const numeric = Number(numericCandidate);
+    if (!isNaN(numeric)) {
+      return numeric;
+    }
+  }
+  if (/^[0-9]/.test(trimmed)) {
+    const parsedDate = new Date(trimmed);
+    if (!isNaN(parsedDate.getTime())) {
+      return parsedDate.getTime();
+    }
+  }
+  return trimmed.toLowerCase();
 }
 
 function parsePlaceholderToken_(token) {
