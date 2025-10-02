@@ -247,7 +247,8 @@ function renderPropertySheets_(spreadsheet, reportData, settings) {
         })
       },
       flags: {
-        has_airbnb: property.property.hasAirbnb
+        has_airbnb: property.property.hasAirbnb,
+        has_admin_fee: property.totals.adminFeeApplied
       }
     };
     if (property.property.hasAirbnb) {
