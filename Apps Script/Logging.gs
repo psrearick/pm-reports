@@ -33,4 +33,3 @@ function readLogRecords_(sheet, headers) {
   });
   return records;
 }
-

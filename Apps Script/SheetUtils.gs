@@ -56,4 +56,3 @@ function writeObjectsToSheet_(sheet, headers, rows, startRow) {
   range.clearContent();
   range.setValues(output);
 }
-

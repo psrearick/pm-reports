@@ -172,6 +172,9 @@ function replaceValuePlaceholders_(value, rowData, placeholders, flags, warnings
     if (parsed.condition) {
       const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, parsed.condition) ? flags[parsed.condition] : false;
       if (!toBool(flagValue)) {
+        if (parsed.isBlock) {
+          return '';
+        }
         return '';
       }
     }
@@ -185,6 +188,9 @@ function replaceValuePlaceholders_(value, rowData, placeholders, flags, warnings
     warnings.push('Missing value for [' + key + ']');
     return '';
   });
+  if (parsedAttachmentRegex_.test(output)) {
+    output = processInlineConditionalBlocks_(output, flags);
+  }
   return output;
 }
 
@@ -224,29 +230,26 @@ function transformBlockData_(blockData, attributes) {
   if (!data.length) {
     return data;
   }
-  if (attributes.group || attributes.sort) {
-    data = sortBlockData_(data, attributes);
-  }
-  if (attributes.group) {
-    data = applyGroupingForDisplay_(data, attributes.group);
-  }
+  data = sortBlockData_(data, attributes);
+  data = applyGroupingForDisplay_(data, attributes.group);
   return data;
 }
 
 function sortBlockData_(data, attributes) {
   const sortOrder = [];
   if (attributes.group) {
-    sortOrder.push(attributes.group);
+    sortOrder.push({ field: attributes.group, secondary: false });
   }
   if (attributes.sort) {
-    sortOrder.push(attributes.sort);
+    sortOrder.push({ field: attributes.sort, secondary: true });
   }
   if (!sortOrder.length) {
     return data.slice();
   }
   return data.slice().sort(function (a, b) {
     for (let i = 0; i < sortOrder.length; i++) {
-      const field = sortOrder[i];
+      const descriptor = sortOrder[i];
+      const field = descriptor.field;
       const valueA = getComparableValue_(a[field]);
       const valueB = getComparableValue_(b[field]);
       if (valueA < valueB) {
@@ -297,12 +300,40 @@ function getComparableValue_(value) {
 }
 
 function parsePlaceholderToken_(token) {
+  const blockMatch = token.match(/^\s*\/if\s*$/);
+  if (blockMatch) {
+    return { key: '', condition: null, isBlockEnd: true, isBlock: false };
+  }
+  const inlineBlockMatch = token.match(/^\s*if\s*=\s*([A-Za-z0-9_\-]+)\s*$/);
+  if (inlineBlockMatch) {
+    return { key: '', condition: inlineBlockMatch[1], isBlockStart: true, isBlock: true };
+  }
+  const inlineContentMatch = token.match(/^\s*(.+?)\s*\|\s*if\s*=\s*([A-Za-z0-9_\-]+)\s*$/);
+  if (inlineContentMatch) {
+    return { key: inlineContentMatch[1].trim(), condition: inlineContentMatch[2].trim(), isBlock: true, inlineContent: inlineContentMatch[1].trim() };
+  }
   const match = token.match(/^\s*(.+?)(?:\s+if\s*=\s*([A-Za-z0-9_\-]+))?\s*$/);
   if (!match) {
-    return { key: token.trim(), condition: null };
+    return { key: token.trim(), condition: null, isBlock: false };
   }
   return {
     key: match[1].trim(),
-    condition: match[2] ? match[2].trim() : null
+    condition: match[2] ? match[2].trim() : null,
+    isBlock: false
   };
 }
+
+function processInlineConditionalBlocks_(text, flags) {
+  let output = text;
+  output = output.replace(/\[if=([A-Za-z0-9_\-]+)\]\s*([\s\S]*?)\s*\[\/if\]/g, function (_, condition, content) {
+    const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, condition) ? flags[condition] : false;
+    return toBool(flagValue) ? content : '';
+  });
+  output = output.replace(/\[([^\]]+)\|\s*if=([A-Za-z0-9_\-]+)\]/g, function (_, content, condition) {
+    const flagValue = flags && Object.prototype.hasOwnProperty.call(flags, condition) ? flags[condition] : false;
+    return toBool(flagValue) ? content : '';
+  });
+  return output;
+}
+
+const parsedAttachmentRegex_ = /\[if=|\|\s*if=/;

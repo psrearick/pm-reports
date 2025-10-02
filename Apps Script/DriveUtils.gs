@@ -99,4 +99,3 @@ function deleteSpreadsheetById(spreadsheetId) {
 function escapeForRegExp_(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
