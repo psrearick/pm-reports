@@ -24,11 +24,27 @@ function importCredits() {
         logCreditImport_(importLogSheet, file, lastUpdated, 0, 'No data rows detected');
         return;
       }
-      const transactions = records.map(function (record) {
-        return buildTransactionRowFromCredit_(record);
+      var skippedRows = 0;
+      const transactions = [];
+      records.forEach(function (record) {
+        const transaction = buildTransactionRowFromCredit_(record);
+        if (transaction) {
+          transactions.push(transaction);
+        } else {
+          skippedRows++;
+        }
       });
+      if (!transactions.length) {
+        results.push({ file: file, skipped: true, reason: 'No valid transactions resolved' });
+        logCreditImport_(importLogSheet, file, lastUpdated, 0, 'No valid transactions resolved');
+        return;
+      }
       appendTransactions_(transactionsSheet, transactions);
-      logCreditImport_(importLogSheet, file, lastUpdated, transactions.length, 'Imported');
+      let notes = 'Imported';
+      if (skippedRows) {
+        notes += ' (Skipped ' + skippedRows + ' row' + (skippedRows === 1 ? '' : 's') + ')';
+      }
+      logCreditImport_(importLogSheet, file, lastUpdated, transactions.length, notes);
       if (sourceConfig.addSheet) {
         addCreditsAuditSheet_(records, file.getName());
       }
@@ -95,10 +111,7 @@ function extractCreditsRecords_(spreadsheet, headerMap) {
     if (isBlank_(rawDate) && isBlank_(rawAmount)) {
       continue;
     }
-    if (typeof rawDate === 'string' && rawDate.indexOf('Total') === 0) {
-      continue;
-    }
-    if (typeof rawAmount === 'string' && rawAmount.indexOf('Total') === 0) {
+    if (isCreditsTotalRow_(rawDate) || isCreditsTotalRow_(rawAmount)) {
       continue;
     }
     if (rawDate === '' || rawDate === null) {
@@ -184,7 +197,22 @@ function parseDateValue_(value) {
 }
 
 function buildTransactionRowFromCredit_(record) {
-  const explanation = record.subcategory || record.category;
+  const propertyName = resolvePropertyFromCredits_(record.property);
+  if (!propertyName) {
+    return null;
+  }
+  const categoryLower = (record.category || '').toLowerCase();
+  if (categoryLower.indexOf('property general expense') !== -1 || categoryLower.indexOf('owner distribution') !== -1) {
+    return null;
+  }
+  const explanationParts = [];
+  if (record.category) {
+    explanationParts.push(record.category);
+  }
+  if (record.subcategory && record.subcategory !== '–') {
+    explanationParts.push(record.subcategory);
+  }
+  const explanation = explanationParts.join(' - ');
   const notesParts = [];
   if (record.method) {
     notesParts.push('Method: ' + record.method);
@@ -196,22 +224,32 @@ function buildTransactionRowFromCredit_(record) {
     notesParts.push('Payer: ' + record.counterparty);
   }
   const notes = notesParts.join(' | ');
-  return {
+  const transaction = {
     'Transaction ID': Utilities.getUuid(),
     'Date': record.date,
-    'Property': record.property,
+    'Property': propertyName,
     'Unit': record.unit,
-    'Credits': record.amount,
+    'Credits': '',
     'Fees': '',
     'Debits': '',
     'Security Deposits': '',
-    'Debit/Credit Explanation': explanation,
+    'Debit/Credit Explanation': explanation || (record.subcategory || record.category || ''),
     'Markup Included': false,
     'Markup Revenue': '',
     'Internal Notes': notes,
     'Deleted': false,
     'Deleted Timestamp': ''
   };
+
+  if (categoryLower.indexOf('deposit') !== -1) {
+    transaction['Security Deposits'] = record.amount;
+  } else if (categoryLower.indexOf('tenant charges') !== -1 || categoryLower.indexOf('fees') !== -1 || categoryLower.indexOf('late payment fee') !== -1) {
+    transaction['Fees'] = record.amount;
+  } else {
+    transaction['Credits'] = record.amount;
+  }
+
+  return transaction;
 }
 
 function appendTransactions_(sheet, transactions) {
@@ -225,6 +263,51 @@ function appendTransactions_(sheet, transactions) {
     });
   });
   sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, headers.length).setValues(rows);
+}
+
+function isCreditsTotalRow_(value) {
+  if (value === null || value === undefined) {
+    return false;
+  }
+  if (value instanceof Date) {
+    return false;
+  }
+  const text = value.toString().trim().toLowerCase();
+  if (!text) {
+    return false;
+  }
+  return text.indexOf('total') !== -1;
+}
+
+function resolvePropertyFromCredits_(rawProperty) {
+  const normalized = normalizeStringValue_(rawProperty);
+  if (!normalized) {
+    return '';
+  }
+  const directMatch = getPropertyByName(normalized);
+  if (directMatch) {
+    return directMatch.name;
+  }
+  const properties = getPropertiesConfig();
+  const haystack = normalized.toLowerCase();
+  let candidate = null;
+  properties.forEach(function (property) {
+    if (!property.keywords || !property.keywords.length) {
+      return;
+    }
+    const matchesAll = property.keywords.every(function (keyword) {
+      return haystack.indexOf(keyword.toLowerCase()) !== -1;
+    });
+    if (matchesAll) {
+      if (!candidate || property.keywords.length > candidate.keywords.length) {
+        candidate = property;
+      }
+    }
+  });
+  if (candidate) {
+    return candidate.name;
+  }
+  return normalized;
 }
 
 function getProcessedCreditSignatures_(importLogSheet) {
