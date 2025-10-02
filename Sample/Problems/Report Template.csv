@@ -3,7 +3,7 @@
 [REPORT PERIOD],,,,,,,,,
 ,,,,,,,,,
 Unit,Credits,Fees,Debits,Security Deposits,Date,Debit/Credit Explanation,Markup Included,Markup Revenue,Internal Notes
-[[ROW transactions group=unit sort=date]],,,,,,,,,
+[[ROW transactions group=unit sort=date groupTail=CAM]],,,,,,,,,
 {unit},{credits},{fees},{debits},{securityDeposits},{date},{explanation},{markupIncluded},{markupRevenue},{internalNotes}
 [[ENDROW]],,,,,,,,,
 ,,,,,,,,,

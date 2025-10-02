@@ -255,6 +255,12 @@ function transformBlockData_(blockData, attributes) {
   }
   const resolved = resolveAttributeFields_(data[0], attributes);
   data = sortBlockData_(data, resolved);
+  if (resolved.groupTailValues && resolved.groupTailValues.length && resolved.groupField) {
+    data = applyTailOrdering_(data, resolved.groupField, resolved.groupTailValues);
+  }
+  if (resolved.sortTailValues && resolved.sortTailValues.length && resolved.sortField) {
+    data = applyTailOrdering_(data, resolved.sortField, resolved.sortTailValues);
+  }
   data = applyGroupingForDisplay_(data, resolved.groupField);
   return data;
 }
@@ -285,6 +291,34 @@ function sortBlockData_(data, attributes) {
     }
     return 0;
   });
+}
+
+function applyTailOrdering_(data, field, tailValues) {
+  if (!field || !tailValues || !tailValues.length) {
+    return data.slice();
+  }
+  const tailSet = tailValues.reduce(function (set, value) {
+    const normalized = (value || '').toString().trim().toLowerCase();
+    if (normalized) {
+      set.add(normalized);
+    }
+    return set;
+  }, new Set());
+  if (!tailSet.size) {
+    return data.slice();
+  }
+  const lead = [];
+  const trail = [];
+  data.forEach(function (item) {
+    const rawValue = item[field];
+    const normalized = rawValue === null || rawValue === undefined ? '' : rawValue.toString().trim().toLowerCase();
+    if (tailSet.has(normalized)) {
+      trail.push(item);
+    } else {
+      lead.push(item);
+    }
+  });
+  return lead.concat(trail);
 }
 
 function applyGroupingForDisplay_(data, groupField) {
@@ -376,6 +410,16 @@ function resolveAttributeFields_(sampleRow, attributes) {
   }
   if (attributes.sort) {
     resolved.sortField = resolveFieldName_(sampleRow, attributes.sort);
+  }
+  if (attributes.groupTail) {
+    resolved.groupTailValues = attributes.groupTail.split(',').map(function (value) {
+      return value.trim();
+    }).filter(function (value) { return !!value; });
+  }
+  if (attributes.sortTail) {
+    resolved.sortTailValues = attributes.sortTail.split(',').map(function (value) {
+      return value.trim();
+    }).filter(function (value) { return !!value; });
   }
   return resolved;
 }
