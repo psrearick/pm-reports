@@ -13,13 +13,6 @@ Month ends on 19th
 9. Copy the calculated values from each `Income Statement` worksheet into the `Summary Page`.
 10. Export the `Summary Page` and a `.pdf`.
 
-## Ideal Process
-
-1. Create `Transactions` spreadsheet for past month from template.
-2. Around the 19th enter all transactions into the `Transactions` spreadsheet.
-3. Download the `Credits` Payment Report spreadsheet from payment processor.
-4. Click button to generate reports, providing `Credits` file path as a target (or placing it in a specific directory with a specific filename to match a pattern).
-
 ## Input and Output
 
 **Input:**
