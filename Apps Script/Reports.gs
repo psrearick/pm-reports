@@ -14,6 +14,7 @@ function generateReport() {
   renderSummarySheet_(spreadsheet, reportData, settings);
   renderAirbnbSheet_(spreadsheet, reportData, settings);
   removeDefaultSheet_(spreadsheet);
+  reorderReportSheets_(spreadsheet, reportData);
   logReportGeneration_(reportData, settings, created, spreadsheet);
   return {
     spreadsheetId: spreadsheet.getId(),
@@ -375,6 +376,32 @@ function removeDefaultSheet_(spreadsheet) {
   const defaultSheet = spreadsheet.getSheetByName('Sheet1');
   if (defaultSheet && spreadsheet.getSheets().length > 1) {
     spreadsheet.deleteSheet(defaultSheet);
+  }
+}
+
+function reorderReportSheets_(spreadsheet, reportData) {
+  const desiredOrder = [];
+  const summarySheet = spreadsheet.getSheetByName('Summary');
+  if (summarySheet) {
+    desiredOrder.push(summarySheet);
+  }
+  const airbnbSheet = spreadsheet.getSheetByName('Airbnb');
+  if (airbnbSheet) {
+    desiredOrder.push(airbnbSheet);
+  }
+  reportData.properties.forEach(function (property) {
+    const sheetName = sanitizeSheetName_(property.name);
+    const sheet = spreadsheet.getSheetByName(sheetName);
+    if (sheet && desiredOrder.indexOf(sheet) === -1) {
+      desiredOrder.push(sheet);
+    }
+  });
+  desiredOrder.forEach(function (sheet, index) {
+    sheet.activate();
+    spreadsheet.moveActiveSheet(index + 1);
+  });
+  if (summarySheet) {
+    summarySheet.activate();
   }
 }
 
