@@ -6,6 +6,9 @@ function renderTemplateSheet(templateSheetName, destinationSpreadsheet, outputSh
   const templateSheet = getSheetByName_(templateSheetName);
   const targetSheet = templateSheet.copyTo(destinationSpreadsheet);
   targetSheet.setName(outputSheetName);
+  if (targetSheet.isSheetHidden()) {
+    targetSheet.showSheet();
+  }
   targetSheet.activate();
   const warnings = applyTemplateContext_(targetSheet, context);
   return { sheet: targetSheet, warnings: warnings };

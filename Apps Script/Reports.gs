@@ -380,6 +380,13 @@ function removeDefaultSheet_(spreadsheet) {
 }
 
 function reorderReportSheets_(spreadsheet, reportData) {
+  const visibleSheets = spreadsheet.getSheets().filter(function (sheet) {
+    return !sheet.isSheetHidden();
+  });
+  if (visibleSheets.length < 2) {
+    // Nothing to reorder; avoid triggering "remove all visible sheets" errors.
+    return;
+  }
   const desiredOrder = [];
   const summarySheet = spreadsheet.getSheetByName('Summary');
   if (summarySheet) {
