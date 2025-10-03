@@ -10,7 +10,7 @@ Follow these steps to initialise a fresh copy of the Reports workbook and run yo
 
 ## 2. Review the Workbook Layout
 
-1. Locate the key sheets: **Transactions**, **Entry & Edit**, **Entry Controls**, **Properties**, **Configuration**, **Import Log**, **Report Log**, and the hidden template sheets (ReportBodyTemplate, ReportTotalsTemplate, ReportAirbnbTemplate).
+1. Locate the key sheets: **Transactions**, **Entry & Edit**, **Entry Controls**, **Properties**, **Configuration**, the hidden logs (**Import Log** and **Report Log**), and the hidden template sheets (**ReportBodyTemplate**, **ReportTotalsTemplate**, **ReportAirbnbTemplate**).
 2. Familiarise yourself with the **Reports** custom menu. All automations are triggered from here.
 
 ## 3. Prepare Google Drive
