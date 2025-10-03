@@ -17,7 +17,7 @@ This guide walks through creating the entire property management reporting syste
 
 ## 2. Create the Master Spreadsheet
 
-1. In the top-level folder, create a new Google Sheets file named PM Transactions Master (you can rename later; only sheet/tab names must match the guide).
+1. In the top-level folder, create a new Google Sheets file named Transactions Master (you can rename later; only sheet/tab names must match the guide).
 2. Open the spreadsheet and rename the default `Sheet1` tab to Transactions (Master).
 
 ## 3. Build the Core Sheets

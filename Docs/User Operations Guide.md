@@ -1,10 +1,10 @@
-# Reports – User Operations Guide
+# Reports – User Guide
 
-This document explains every feature that is available in the Reports workbook from the perspective of someone operating the Google Sheet. It focuses on what you can do in the interface, what the menu commands accomplish, and how the supporting sheets and Drive folders work together.
+This document explains every feature that is available in the Reports workbook. It focuses on what you can do in the interface, what the menu commands accomplish, and how the supporting sheets and Drive folders work together.
 
 ## 1. Platform Overview
 
-The solution is centred on a Google Sheet that stores raw transactions, staging data for edits, configuration tables, and reporting templates. Custom menu actions (the **Reports** menu) orchestrate imports, cleans, reporting, and exports. Google Drive is used for versioned report storage and PDF exports. The workflow is:
+The solution is centered on a Google Sheet that stores raw transactions, staging data for edits, configuration tables, and reporting templates. Custom menu actions (the **Reports** menu) orchestrate imports, cleans, reporting, and exports. Google Drive is used for versioned report storage and PDF exports. The workflow is:
 
 1. Maintain the master **Transactions** table (directly or via **Import Credits** + **Clean Transactions Data**).
 2. Use **Entry Controls** and **Entry & Edit** to review or adjust a date- and property-filtered slice of transactions.
@@ -24,7 +24,6 @@ The solution is centred on a Google Sheet that stores raw transactions, staging 
 | **ReportBodyTemplate** / **ReportTotalsTemplate** / **ReportAirbnbTemplate** | Hidden templates consumed by the templating engine when building the report spreadsheet.                                                                           |
 | **Import Log**                                                               | Audit trail for every credit file import (file ID, timestamp, rows imported, notes). Prevents duplicate processing.                                                |
 | **Report Log**                                                               | History of every generated report (label, period, spreadsheet ID/URL, version, admin-fee decisions). Used when exporting PDFs.                                     |
-| _(Optional)_ **Reference**                                                   | You can paste the reference page content (see “Reference Page Content” document) here so end users have quick instructions inside the workbook.                    |
 
 ## 3. Reports Menu Actions
 
