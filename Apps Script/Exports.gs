@@ -36,14 +36,16 @@ function exportSpreadsheetToFolder_(spreadsheet, reportLabel) {
     const fileName = sanitizeSheetName_(sheet.getName()) + '.pdf';
     pdfBlob.setName(fileName);
     exportFolderInfo.folder.createFile(pdfBlob);
+    Utilities.sleep(500);
   });
   return exportFolderInfo;
 }
 
 function exportSheetToPdf_(spreadsheet, sheet) {
   const exportUrl = buildSheetExportUrl_(spreadsheet.getId(), sheet.getSheetId());
-  const response = UrlFetchApp.fetch(exportUrl, {
-    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() }
+  const response = fetchWithRetry_(exportUrl, {
+    headers: { Authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    muteHttpExceptions: true
   });
   return response.getBlob();
 }
@@ -89,4 +91,35 @@ function buildSheetExportUrl_(spreadsheetId, sheetId) {
     return key + '=' + encodeURIComponent(params[key]);
   }).join('&');
   return baseUrl + '?' + query;
+}
+
+function fetchWithRetry_(url, options, maxAttempts) {
+  maxAttempts = maxAttempts || 5;
+  const baseDelayMs = 500;
+  let attempt = 0;
+  let lastError = null;
+  while (attempt < maxAttempts) {
+    attempt++;
+    try {
+      const response = UrlFetchApp.fetch(url, options);
+      const status = response.getResponseCode();
+      if (status >= 200 && status < 300) {
+        return response;
+      }
+      if (status === 429 || status >= 500) {
+        lastError = new Error('HTTP ' + status + ' while requesting ' + url);
+      } else {
+        const message = response.getContentText();
+        throw new Error('HTTP ' + status + ' while requesting ' + url + ': ' + message);
+      }
+    } catch (err) {
+      lastError = err;
+    }
+    if (attempt >= maxAttempts) {
+      break;
+    }
+    const delay = Math.min(60000, Math.pow(2, attempt - 1) * baseDelayMs + Math.floor(Math.random() * baseDelayMs));
+    Utilities.sleep(delay);
+  }
+  throw lastError || new Error('Request failed for ' + url);
 }
