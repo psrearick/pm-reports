@@ -178,8 +178,8 @@ function calculatePropertyTotals_(transactions, propertyConfig, adminFeeOverride
   totals.unitCount = unitSet.size;
   const mafRate = propertyConfig.maf || 0;
   const mafFromCredits = totals.credits * mafRate;
-  const mafFromUnits = totals.unitCount * 5;
-  let totalMaf = mafFromCredits + mafFromUnits;
+  // const mafFromUnits = totals.unitCount * 5;
+  let totalMaf = mafFromCredits // + mafFromUnits;
   const adminFeeDefault = toBool(propertyConfig.adminFeeEnabled);
   const adminFeeApplied = adminFeeOverride === null ? adminFeeDefault : adminFeeOverride;
   if (adminFeeApplied && propertyConfig.adminFee) {
@@ -196,7 +196,7 @@ function calculatePropertyTotals_(transactions, propertyConfig, adminFeeOverride
     totalDebits += totals.airbnbFee;
   }
   const dueToOwners = combinedCredits - totalDebits;
-  const totalToPm = totals.markupRevenue + totalMaf + totals.airbnbFee;
+  const totalToPm = totals.markupRevenue + totalMaf + totals.airbnbFee + totals.adminFeeAmount;
   totals.totalMaf = Math.round(totalMaf * 100) / 100;
   totals.totalDebits = Math.round(totalDebits * 100) / 100;
   totals.combinedCredits = Math.round(combinedCredits * 100) / 100;
