@@ -4,8 +4,9 @@ This guide walks through creating the entire property management reporting syste
 
 ## 1. Create the Drive Structure
 
-1. In Google Drive, create a new top-level folder (e.g., PM Reports). This is the `Output Folder ID` that the configuration will reference.
+1. In Google Drive, create a new top-level folder (e.g., Reports). This is the `Output Folder ID` that the configuration will reference.
 2. Create two optional subfolders (you can name them differently if desired):
+
     - Reports – the script stores generated Google Sheets reports here.
     - Exports – the script stores PDF exports here.
 
@@ -78,18 +79,20 @@ This guide walks through creating the entire property management reporting syste
 3. Populate rows with property data. Example values based on `Data/Transactions Properties.csv`:
 
 ---
-| Property                 | MAF  | Markup | Airbnb | Has Airbnb | Admin Fee | Admin Fee Enabled | Key             |
-|--------------------------|------|--------|--------|------------|-----------|-------------------|-----------------|
-| 1505-1515 Franklin Park  | 0.06 | 0.1    | 0      | FALSE      | 0         | FALSE             | franklin,park   |
-| 189 W Patterson Ave      | 0.07 | 0.1    | 0      | FALSE      | 0         | FALSE             | patterson       |
-| 196 Miller Ave           | 0.06 | 0.1    | 0      | FALSE      | 0         | FALSE             | miller          |
-| 22 Wilson Ave            | 0.08 | 0.1    | 0      | FALSE      | 0         | FALSE             | wilson          |
-| 2536 Adams Ave           | 0    | 0.1    | 0      | FALSE      | 15        | TRUE              | adams           |
-| 705 Ann                  | 0.02 | 0.1    | 0      | FALSE      | 0         | FALSE             | ann             |
-| Ohio & Bryden            | 0.06 | 0.1    | 0      | FALSE      | 0         | FALSE             | ohio,bryden     |
-| Park and State           | 0.08 | 0      | 0.04   | TRUE       | 0         | FALSE             | park,state      |
-| Schiller Terrace         | 0.07 | 0.1    | 0      | FALSE      | 0         | FALSE             | schiller        |
-| 1476 S High St           | 0.08 | 0.1    | 0      | FALSE      | 0         | FALSE             | high            |
+
+| Property                | MAF  | Markup | Airbnb | Has Airbnb | Admin Fee | Admin Fee Enabled | Key           |
+| ----------------------- | ---- | ------ | ------ | ---------- | --------- | ----------------- | ------------- |
+| 1505-1515 Franklin Park | 0.06 | 0.1    | 0      | FALSE      | 0         | FALSE             | franklin,park |
+| 189 W Patterson Ave     | 0.07 | 0.1    | 0      | FALSE      | 0         | FALSE             | patterson     |
+| 196 Miller Ave          | 0.06 | 0.1    | 0      | FALSE      | 0         | FALSE             | miller        |
+| 22 Wilson Ave           | 0.08 | 0.1    | 0      | FALSE      | 0         | FALSE             | wilson        |
+| 2536 Adams Ave          | 0    | 0.1    | 0      | FALSE      | 15        | TRUE              | adams         |
+| 705 Ann                 | 0.02 | 0.1    | 0      | FALSE      | 0         | FALSE             | ann           |
+| Ohio & Bryden           | 0.06 | 0.1    | 0      | FALSE      | 0         | FALSE             | ohio,bryden   |
+| Park and State          | 0.08 | 0      | 0.04   | TRUE       | 0         | FALSE             | park,state    |
+| Schiller Terrace        | 0.07 | 0.1    | 0      | FALSE      | 0         | FALSE             | schiller      |
+| 1476 S High St          | 0.08 | 0.1    | 0      | FALSE      | 0         | FALSE             | high          |
+
 ---
 
 4. Format `MAF`, `Markup`, `Airbnb` as decimals; `Has Airbnb` and `Admin Fee Enabled` as checkboxes; `Admin Fee` as currency (optional).
@@ -101,23 +104,25 @@ This guide walks through creating the entire property management reporting syste
 3. Add configuration keys and fill in the `Value` column:
 
 ---
-| Setting                | Value (example)                                  |
-|------------------------|---------------------------------------------------|
-| Credits Document       | *(optional)* – single spreadsheet ID             |
-| Credits Folder ID      | *(optional)* – Drive folder ID for .xlsx imports |
-| Credits Date           | `Date paid`                                      |
-| Credits Amount         | `Amount paid`                                    |
-| Credits Property       | `Property name`                                  |
-| Credits Unit           | `Unit`                                           |
-| Credits Category       | `Category`                                       |
-| Credits Subcategory    | `Sub-category`                                   |
-| Credits Status         | `Payment status` *(or leave blank for default)*  |
-| Credits Method         | `Payment method` *(or blank)*                    |
-| Credits Payer          | `Payer / Payee` *(or blank)*                     |
-| Add Credits Sheet      | `FALSE` (or `TRUE` to add audit sheets)          |
-| Output Folder ID       | *(required)* – ID from step 1                    |
-| Reports Folder Name    | `Reports` (or blank if not using subfolder)      |
-| Exports Folder Name    | `Exports` (or blank)                             |
+
+| Setting             | Value (example)                                  |
+| ------------------- | ------------------------------------------------ |
+| Credits Document    | _(optional)_ – single spreadsheet ID             |
+| Credits Folder ID   | _(optional)_ – Drive folder ID for .xlsx imports |
+| Credits Date        | `Date paid`                                      |
+| Credits Amount      | `Amount paid`                                    |
+| Credits Property    | `Property name`                                  |
+| Credits Unit        | `Unit`                                           |
+| Credits Category    | `Category`                                       |
+| Credits Subcategory | `Sub-category`                                   |
+| Credits Status      | `Payment status` _(or leave blank for default)_  |
+| Credits Method      | `Payment method` _(or blank)_                    |
+| Credits Payer       | `Payer / Payee` _(or blank)_                     |
+| Add Credits Sheet   | `FALSE` (or `TRUE` to add audit sheets)          |
+| Output Folder ID    | _(required)_ – ID from step 1                    |
+| Reports Folder Name | `Reports` (or blank if not using subfolder)      |
+| Exports Folder Name | `Exports` (or blank)                             |
+
 ---
 
 4. Ensure `Add Credits Sheet` is a plain text `TRUE/FALSE` string (or use checkbox, both work).
@@ -126,6 +131,7 @@ This guide walks through creating the entire property management reporting syste
 
 1. Add a sheet named Report Log.
 2. Enter headers row 1 (A1–I1):
+
     - `Timestamp`
     - `Report Label`
     - `Version`
@@ -215,7 +221,7 @@ Create three hidden template tabs. These must match the names expected by the sc
 ## 6. Populate Initial Data (Optional)
 
 1. If you have historical credit or transaction CSVs, import them manually into `Transactions (Master)` (ensuring all columns are filled). Alternatively, run the Apps Script import after setting configuration values.
-2. Staging sheet will be blank until you click PM Reports > Load Staging Data.
+2. Staging sheet will be blank until you click Reports > Load Staging Data.
 
 ## 7. Configure Credits Import Sources
 
@@ -227,7 +233,7 @@ Create three hidden template tabs. These must match the names expected by the sc
 
 ## 8. Running the Workflow
 
-1. Use the custom menu PM Reports:
+1. Use the custom menu Reports:
     - Import Credits – Processes configured files, appends new transactions, and logs results.
     - Load Staging Data – Reads the controls on **Entry Controls**. Leave `Property` blank to load all properties, or select a single property to focus the staging grid.
     - Save Staging Data – Pushes changes back to the master sheet for the filtered scope (all properties or the single property).
@@ -237,19 +243,19 @@ Create three hidden template tabs. These must match the names expected by the sc
 
 ## 9. Logs & Maintenance
 
-- **Import Log**: Review processed files and re-run imports if you add new `.xlsx` files (modify or delete rows if you need to force re-import).
-- **Report Log**: Track generated reports, spreadsheet IDs, and admin fee decisions. Use the logged URLs to reopen reports quickly.
-- Periodically clear or archive old `Credits` audit sheets if `Add Credits Sheet` is enabled.
-- Keep template sheets up to date with any layout changes; update placeholders as needed (no code changes required for new tokens that map to existing data fields).
+-   **Import Log**: Review processed files and re-run imports if you add new `.xlsx` files (modify or delete rows if you need to force re-import).
+-   **Report Log**: Track generated reports, spreadsheet IDs, and admin fee decisions. Use the logged URLs to reopen reports quickly.
+-   Periodically clear or archive old `Credits` audit sheets if `Add Credits Sheet` is enabled.
+-   Keep template sheets up to date with any layout changes; update placeholders as needed (no code changes required for new tokens that map to existing data fields).
 
 ## 10. Final Checklist
 
-- [ ] Output folder ID set in `Configuration`.
-- [ ] Reports/Exports subfolder names (if used) match the Drive structure.
-- [ ] Properties sheet contains all active properties with correct rates, admin fees, and keywords.
-- [ ] Template sheets include the correct markers (`[[ROW ...]]`, `{field}`, `[PLACEHOLDER]`).
-- [ ] Drive Advanced Service enabled in Apps Script.
-- [ ] Custom menu appears (run `onOpen` if not).
-- [ ] Optional: add time-driven triggers for automatic imports or scheduled exports, if desired.
+-   [ ] Output folder ID set in `Configuration`.
+-   [ ] Reports/Exports subfolder names (if used) match the Drive structure.
+-   [ ] Properties sheet contains all active properties with correct rates, admin fees, and keywords.
+-   [ ] Template sheets include the correct markers (`[[ROW ...]]`, `{field}`, `[PLACEHOLDER]`).
+-   [ ] Drive Advanced Service enabled in Apps Script.
+-   [ ] Custom menu appears (run `onOpen` if not).
+-   [ ] Optional: add time-driven triggers for automatic imports or scheduled exports, if desired.
 
 With these steps completed, the system is ready to ingest credit files, manage transactions with staging safeguards, and generate templated property reports and PDFs.

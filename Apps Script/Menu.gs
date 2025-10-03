@@ -73,11 +73,11 @@ function runWithUiFeedback_(activityMessage, action) {
     showToast_(spreadsheet, resultMessage, 5);
   } catch (err) {
     showToast_(spreadsheet, 'Error: ' + err.message, 10);
-    SpreadsheetApp.getUi().alert('PM Reports', err.message, SpreadsheetApp.getUi().ButtonSet.OK);
+    SpreadsheetApp.getUi().alert('Reports', err.message, SpreadsheetApp.getUi().ButtonSet.OK);
     throw err;
   }
 }
 
 function showToast_(spreadsheet, message, seconds) {
-  spreadsheet.toast(message, 'PM Reports', seconds || 5);
+  spreadsheet.toast(message, 'Reports', seconds || 5);
 }
