@@ -197,7 +197,7 @@ function parseDateValue_(value) {
 }
 
 function buildTransactionRowFromCredit_(record) {
-  const propertyName = resolvePropertyFromCredits_(record.property);
+  const propertyName = resolvePropertyName(record.property);
   if (!propertyName) {
     return null;
   }
@@ -280,34 +280,7 @@ function isCreditsTotalRow_(value) {
 }
 
 function resolvePropertyFromCredits_(rawProperty) {
-  const normalized = normalizeStringValue_(rawProperty);
-  if (!normalized) {
-    return '';
-  }
-  const directMatch = getPropertyByName(normalized);
-  if (directMatch) {
-    return directMatch.name;
-  }
-  const properties = getPropertiesConfig();
-  const haystack = normalized.toLowerCase();
-  let candidate = null;
-  properties.forEach(function (property) {
-    if (!property.keywords || !property.keywords.length) {
-      return;
-    }
-    const matchesAll = property.keywords.every(function (keyword) {
-      return haystack.indexOf(keyword.toLowerCase()) !== -1;
-    });
-    if (matchesAll) {
-      if (!candidate || property.keywords.length > candidate.keywords.length) {
-        candidate = property;
-      }
-    }
-  });
-  if (candidate) {
-    return candidate.name;
-  }
-  return normalized;
+  return resolvePropertyName(rawProperty);
 }
 
 function getProcessedCreditSignatures_(importLogSheet) {

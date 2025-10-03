@@ -1,10 +1,11 @@
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu('PM Reports')
+  ui.createMenu('Reports')
     .addItem('Import Credits', 'handleImportCredits_')
     .addSeparator()
     .addItem('Load Staging Data', 'handleLoadStaging_')
     .addItem('Save Staging Data', 'handleSaveStaging_')
+    .addItem('Clean Transactions Data', 'handleCleanTransactions_')
     .addItem('Generate Report', 'handleGenerateReport_')
     .addItem('Export Report', 'handleExportReport_')
     .addToUi();
@@ -44,6 +45,23 @@ function handleExportReport_() {
   runWithUiFeedback_('Preparing export...', function () {
     const exported = exportReportByLabel();
     return exported ? 'Export completed.' : 'Export cancelled or not found.';
+  });
+}
+
+function handleCleanTransactions_() {
+  runWithUiFeedback_('Cleaning transactions...', function () {
+    const result = cleanTransactionsData();
+    const processed = result.rowsProcessed || 0;
+    const updated = result.rowsUpdated || 0;
+    const issues = result.issues ? result.issues.length : 0;
+    let message = 'Reviewed ' + processed + ' transaction row(s).';
+    if (updated) {
+      message += ' Updated ' + updated + '.';
+    }
+    if (issues) {
+      message += ' ' + issues + ' issue(s) logged.';
+    }
+    return message;
   });
 }
 

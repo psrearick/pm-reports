@@ -329,3 +329,190 @@ function isRowEffectivelyEmpty_(row) {
     return !row[field];
   });
 }
+
+function cleanTransactionsData() {
+  const sheet = getSheetByName_(SHEET_NAMES.TRANSACTIONS);
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  if (lastRow < 2 || lastColumn === 0) {
+    return { rowsProcessed: 0, rowsUpdated: 0, issues: [] };
+  }
+  const headers = sheet.getRange(1, 1, 1, lastColumn).getValues()[0];
+  const headerIndex = getHeaderIndexMap_(headers);
+  const dataRange = sheet.getRange(2, 1, lastRow - 1, lastColumn);
+  const values = dataRange.getValues();
+  const issues = [];
+  const seenIds = {};
+  let rowsUpdated = 0;
+
+  values.forEach(function (row, index) {
+    const rowNumber = index + 2;
+    let changed = false;
+
+    function setValue(columnIndex, newValue) {
+      if (columnIndex === undefined || columnIndex === null) {
+        return;
+      }
+      if (!valuesEquivalent_(row[columnIndex], newValue)) {
+        row[columnIndex] = newValue;
+        changed = true;
+      }
+    }
+
+    const transactionIdIndex = headerIndex['Transaction ID'];
+    if (transactionIdIndex !== undefined) {
+      let id = normalizeStringValue_(row[transactionIdIndex]);
+      if (!id) {
+        id = Utilities.getUuid();
+        issues.push('Row ' + rowNumber + ': Generated missing Transaction ID.');
+      }
+      if (seenIds[id]) {
+        id = Utilities.getUuid();
+        issues.push('Row ' + rowNumber + ': Duplicate Transaction ID replaced.');
+      }
+      seenIds[id] = true;
+      setValue(transactionIdIndex, id);
+    }
+
+    const dateIndex = headerIndex['Date'];
+    if (dateIndex !== undefined) {
+      const trimmed = trimCellValue_(row[dateIndex]);
+      setValue(dateIndex, trimmed);
+      const normalizedDate = normalizeDateValue_(trimmed);
+      if (normalizedDate instanceof Date) {
+        setValue(dateIndex, normalizedDate);
+      } else if (trimmed && !(trimmed instanceof Date)) {
+        issues.push('Row ' + rowNumber + ': Unable to parse Date value.');
+      }
+      if (!trimmed) {
+        setValue(dateIndex, '');
+      }
+    }
+
+    const propertyIndex = headerIndex['Property'];
+    if (propertyIndex !== undefined) {
+      const propertyName = resolvePropertyName(row[propertyIndex]);
+      if (!propertyName) {
+        issues.push('Row ' + rowNumber + ': Property is blank.');
+      }
+      setValue(propertyIndex, propertyName);
+    }
+
+    const unitIndex = headerIndex['Unit'];
+    if (unitIndex !== undefined) {
+      setValue(unitIndex, trimCellValue_(row[unitIndex]));
+    }
+
+    const textFields = ['Debit/Credit Explanation', 'Internal Notes'];
+    textFields.forEach(function (field) {
+      const columnIndex = headerIndex[field];
+      if (columnIndex !== undefined) {
+        setValue(columnIndex, trimCellValue_(row[columnIndex]));
+      }
+    });
+
+    const currencyFields = ['Credits', 'Fees', 'Debits', 'Security Deposits', 'Markup Revenue'];
+    currencyFields.forEach(function (field) {
+      const columnIndex = headerIndex[field];
+      if (columnIndex === undefined) {
+        return;
+      }
+      const cleanedValue = normalizeCurrencyCell_(row[columnIndex], rowNumber, field, issues);
+      setValue(columnIndex, cleanedValue);
+    });
+
+    const markupIncludedIndex = headerIndex['Markup Included'];
+    if (markupIncludedIndex !== undefined) {
+      const boolValue = toBool(row[markupIncludedIndex]);
+      if (!boolValue) {
+        setValue(markupIncludedIndex, false);
+      } else {
+        setValue(markupIncludedIndex, true);
+      }
+    }
+
+    const deletedIndex = headerIndex['Deleted'];
+    const deletedTimestampIndex = headerIndex['Deleted Timestamp'];
+    if (deletedIndex !== undefined) {
+      const deleted = toBool(row[deletedIndex]);
+      setValue(deletedIndex, deleted);
+      if (deletedTimestampIndex !== undefined) {
+        if (deleted) {
+          const normalizedTimestamp = normalizeDateValue_(row[deletedTimestampIndex]);
+          if (normalizedTimestamp instanceof Date) {
+            setValue(deletedTimestampIndex, normalizedTimestamp);
+          } else if (!row[deletedTimestampIndex]) {
+            setValue(deletedTimestampIndex, utcNow_());
+            issues.push('Row ' + rowNumber + ': Added missing Deleted Timestamp.');
+          } else {
+            issues.push('Row ' + rowNumber + ': Invalid Deleted Timestamp.');
+            setValue(deletedTimestampIndex, '');
+          }
+        } else if (row[deletedTimestampIndex]) {
+          setValue(deletedTimestampIndex, '');
+        }
+      }
+    }
+
+    if (changed) {
+      rowsUpdated++;
+    }
+  });
+
+  if (rowsUpdated) {
+    dataRange.setValues(values);
+  }
+  if (issues.length) {
+    issues.forEach(function (message) {
+      Logger.log(message);
+    });
+  }
+  return { rowsProcessed: values.length, rowsUpdated: rowsUpdated, issues: issues };
+}
+
+function valuesEquivalent_(a, b) {
+  if (a === b) {
+    return true;
+  }
+  if (a instanceof Date && b instanceof Date) {
+    return a.getTime() === b.getTime();
+  }
+  if ((a === '' || a === null || a === undefined) && (b === '' || b === null || b === undefined)) {
+    return true;
+  }
+  return false;
+}
+
+function trimCellValue_(value) {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return value;
+}
+
+function normalizeCurrencyCell_(value, rowNumber, fieldName, issues) {
+  if (value === null || value === undefined || value === '') {
+    return '';
+  }
+  if (value instanceof Date) {
+    issues.push('Row ' + rowNumber + ': Date found in ' + fieldName + ' column and was cleared.');
+    return '';
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return '';
+    }
+    const digitsOnly = trimmed.replace(/[$,]/g, '');
+    if (!/\d/.test(digitsOnly) || !/^[-]?\d*(?:\.\d+)?$/.test(digitsOnly)) {
+      issues.push('Row ' + rowNumber + ': Non-numeric value "' + trimmed + '" in ' + fieldName + ' column was cleared.');
+      return '';
+    }
+  }
+  const parsed = parseCurrency_(value);
+  const rounded = Math.round(parsed * 100) / 100;
+  return rounded;
+}
