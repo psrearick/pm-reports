@@ -240,7 +240,7 @@ function renderPropertySheets_(spreadsheet, reportData, settings) {
             securityDeposits: formatCurrency_(transaction.securityDeposits),
             date: formatDateDisplay_(transaction.date),
             explanation: transaction.explanation,
-            markupIncluded: transaction.markupIncluded ? 'Yes' : '',
+            markupIncluded: transaction.markupIncluded ? 'Yes' : 'No',
             markupRevenue: formatCurrency_(transaction.markupRevenue),
             internalNotes: transaction.internalNotes || ''
           };

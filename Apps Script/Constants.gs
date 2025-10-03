@@ -1,8 +1,8 @@
 const SHEET_NAMES = {
   CONFIG: 'Configuration',
   PROPERTIES: 'Properties',
-  TRANSACTIONS: 'Transactions (Master)',
-  STAGING: 'Entry & Edit (Staging)',
+  TRANSACTIONS: 'Transactions',
+  STAGING: 'Entry & Edit',
   CONTROL: 'Entry Controls',
   IMPORT_LOG: 'Import Log',
   REPORT_LOG: 'Report Log',

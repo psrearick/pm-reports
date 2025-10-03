@@ -6,7 +6,7 @@ function onOpen() {
     .addItem('Load Staging Data', 'handleLoadStaging_')
     .addItem('Save Staging Data', 'handleSaveStaging_')
     .addItem('Generate Report', 'handleGenerateReport_')
-    .addItem('Export Report (from log)', 'handleExportReport_')
+    .addItem('Export Report', 'handleExportReport_')
     .addToUi();
 }
 
