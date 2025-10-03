@@ -31,12 +31,14 @@ function exportSpreadsheetToFolder_(spreadsheet, reportLabel) {
       sheet.getSheetName() !== SHEET_NAMES.TEMPLATE_AIRBNB &&
       !sheet.isSheetHidden();
   });
-  sheets.forEach(function (sheet) {
+  sheets.forEach(function (sheet, index) {
+    if (index > 0) {
+      Utilities.sleep(1500);
+    }
     const pdfBlob = exportSheetToPdf_(spreadsheet, sheet);
     const fileName = sanitizeSheetName_(sheet.getName()) + '.pdf';
     pdfBlob.setName(fileName);
     exportFolderInfo.folder.createFile(pdfBlob);
-    Utilities.sleep(500);
   });
   return exportFolderInfo;
 }
@@ -94,8 +96,8 @@ function buildSheetExportUrl_(spreadsheetId, sheetId) {
 }
 
 function fetchWithRetry_(url, options, maxAttempts) {
-  maxAttempts = maxAttempts || 5;
-  const baseDelayMs = 500;
+  maxAttempts = maxAttempts || 8;
+  const baseDelayMs = 1000;
   let attempt = 0;
   let lastError = null;
   while (attempt < maxAttempts) {
