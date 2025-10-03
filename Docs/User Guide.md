@@ -18,7 +18,7 @@ The solution is centered on a Google Sheet that stores raw transactions, staging
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **Transactions**                                                             | Master ledger. One row per transaction with IDs, amounts, flags, and timestamps. All reports pull from here.                                                       |
 | **Entry & Edit**                                                             | Staging area populated by **Load Staging Data**. Users make edits/additions here before saving. Includes a `Delete Permanently` column for hard deletes.           |
-| **Entry Controls**                                                           | Control panel (cells B2–B7) that drives staging filters, report generation, report labels, and admin fee overrides.                                                |
+| **Entry Controls**                                                           | Control panel (cells B2–B7) that drives staging filters, report generation, and report labels.                                                |
 | **Properties**                                                               | Configuration for each property: MAF %, Markup %, Airbnb participation, admin fee settings, and keyword aliases to recognise property names during imports/cleans. |
 | **Configuration**                                                            | Key/value settings that tell the automations where to find credit source files, target Drive folders, and column headers inside import files.                      |
 | **ReportBodyTemplate** / **ReportTotalsTemplate** / **ReportAirbnbTemplate** | Hidden templates consumed by the templating engine when building the report spreadsheet.                                                                           |
@@ -85,7 +85,6 @@ All automation is exposed under **Reports** in the sheet menu. Each command vali
 -   **Purpose:** Create a versioned reporting spreadsheet that includes a summary sheet, optional Airbnb sheet, and one tab per property.
 -   **Inputs:** The same **Entry Controls** values used for staging (Start Date, End Date, Property filter) plus:
     -   `B5` **Report Label** – used in report naming and displayed in templates.
-    -   `B7` **Admin Fee Override** – leave blank to respect each property’s `Admin Fee Enabled` flag; set TRUE to force the admin fee on for all properties in scope; set FALSE to suppress it.
 -   **Processing steps:**
     1. Collect not-deleted transactions within the date range (and property filter if provided).
     2. Group by property (alphabetically sorted) and compute totals:
@@ -123,7 +122,6 @@ All automation is exposed under **Reports** in the sheet menu. Each command vali
 | B4   | Property           | Optional single-property filter for staging and reporting. Must match the canonical property name.                                     |
 | B5   | Report Label       | Text displayed on generated reports and used for naming/versioning.                                                                    |
 | B6   | Show Deleted       | TRUE to include deleted rows in staging load.                                                                                          |
-| B7   | Admin Fee Override | Blank = respect property default. TRUE = force admin fee for all properties. FALSE = suppress admin fee for all properties in the run. |
 
 ### 4.2 Configuration Sheet Keys
 
@@ -152,7 +150,7 @@ You can cache-bust values by editing them directly; the script reads fresh value
 | Airbnb            | Percentage used to calculate the Airbnb collection fee.                                      |
 | Has Airbnb        | TRUE if Airbnb totals should be tracked for this property.                                   |
 | Admin Fee         | Flat admin fee amount added to MAF when admin fee is applied.                                |
-| Admin Fee Enabled | Default boolean indicating whether the admin fee should apply when no override is supplied.  |
+| Admin Fee Enabled | Default boolean indicating whether the admin fee should apply.                               |
 | Key               | Comma-separated list of keywords to match property names that appear differently in imports. |
 
 Maintain this sheet so property mapping, MAF, and markup calculations stay accurate.

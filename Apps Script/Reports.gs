@@ -4,7 +4,7 @@ function generateReport() {
     throw new Error('Report Label is required.');
   }
   const folders = ensureDestinationFolders();
-  const reportData = buildReportData_(settings.startDate, settings.endDate, settings.adminFeeOverride, settings.property);
+  const reportData = buildReportData_(settings.startDate, settings.endDate, settings.property);
   if (!reportData.properties.length) {
     throw new Error('No transactions found for the selected period.');
   }
@@ -28,21 +28,15 @@ function getReportSettings_() {
   const endDate = parseOptionalDate_(sheet.getRange(STAGING_CONTROL.END_DATE_CELL).getValue());
   const reportLabel = normalizeStringValue_(sheet.getRange(STAGING_CONTROL.REPORT_LABEL_CELL).getValue());
   const property = normalizeStringValue_(sheet.getRange(STAGING_CONTROL.PROPERTY_CELL).getValue());
-  const adminOverrideCell = sheet.getRange(STAGING_CONTROL.ADMIN_FEE_OVERRIDE_CELL).getValue();
-  let adminFeeOverride = null;
-  if (adminOverrideCell !== '' && adminOverrideCell !== null) {
-    adminFeeOverride = toBool(adminOverrideCell);
-  }
   return {
     startDate: startDate,
     endDate: endDate,
     reportLabel: reportLabel,
-    adminFeeOverride: adminFeeOverride,
     property: property
   };
 }
 
-function buildReportData_(startDate, endDate, adminFeeOverride, propertyFilter) {
+function buildReportData_(startDate, endDate, propertyFilter) {
   const propertyConfigs = getPropertiesConfig();
   const propertyMap = {};
   propertyConfigs.forEach(function (config) {
@@ -61,7 +55,7 @@ function buildReportData_(startDate, endDate, adminFeeOverride, propertyFilter) 
       adminFee: 0,
       adminFeeEnabled: false
     };
-    const totals = calculatePropertyTotals_(propertyTransactions, propertyConfig, adminFeeOverride);
+    const totals = calculatePropertyTotals_(propertyTransactions, propertyConfig);
     properties.push({
       name: propertyName,
       property: propertyConfig,
@@ -139,7 +133,7 @@ function collectTransactionsForRange_(startDate, endDate, propertyMap, propertyF
   return results;
 }
 
-function calculatePropertyTotals_(transactions, propertyConfig, adminFeeOverride) {
+function calculatePropertyTotals_(transactions, propertyConfig) {
   const totals = {
     credits: 0,
     fees: 0,
@@ -180,8 +174,7 @@ function calculatePropertyTotals_(transactions, propertyConfig, adminFeeOverride
   const mafFromCredits = totals.credits * mafRate;
   // const mafFromUnits = totals.unitCount * 5;
   let totalMaf = mafFromCredits // + mafFromUnits;
-  const adminFeeDefault = toBool(propertyConfig.adminFeeEnabled);
-  const adminFeeApplied = adminFeeOverride === null ? adminFeeDefault : adminFeeOverride;
+  const adminFeeApplied = toBool(propertyConfig.adminFeeEnabled);
   if (adminFeeApplied && propertyConfig.adminFee) {
     totalMaf += propertyConfig.adminFee;
     totals.adminFeeApplied = true;

@@ -68,7 +68,6 @@ On the **Entry Controls** sheet:
 2. Leave **Property (B4)** blank to work on all properties, or enter a single property name to isolate it.
 3. Enter a **Report Label (B5)** – this will become the name of the generated report.
 4. Decide whether to **Show Deleted (B6)** transactions in staging.
-5. (Optional) Set **Admin Fee Override (B7)** to TRUE or FALSE if you want to override the per-property default for the next report.
 
 ## 9. Edit Transactions via Staging
 

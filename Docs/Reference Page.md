@@ -15,7 +15,7 @@
 2. **Load staging:** Adjust Entry Controls (dates, optional property, show deleted) then choose **Reports → Load Staging Data**.
 3. **Edit:** Update rows in **Entry & Edit**. Add new transactions at the bottom (leave Transaction ID blank). Mark `Delete Permanently` for hard deletes.
 4. **Save:** Run **Reports → Save Staging Data** to push changes back into **Transactions**.
-5. **Generate report:** Set the report label and (optional) admin fee override, then run **Reports → Generate Report**. Review the new spreadsheet that appears in the Reports folder.
+5. **Generate report:** Set the report label, then run **Reports → Generate Report**. Review the new spreadsheet that appears in the Reports folder.
 6. **Export PDFs:** When final, run **Reports → Export Report** to create PDFs in the Exports folder (leave the prompt blank to export the most recent report).
 
 ## Menu Cheat Sheet
@@ -31,7 +31,7 @@
 
 ## Quick Notes by Sheet
 
--   **Entry Controls** (B2–B7): Start Date, End Date, Property filter, Report Label, Show Deleted toggle, Admin Fee Override.
+-   **Entry Controls** (B2–B7): Start Date, End Date, Property filter, Report Label, Show Deleted toggle.
 -   **Entry & Edit:** Contains standard transaction columns plus `Delete Permanently`. Clearing a staging row removes it from the master table (it becomes a soft delete unless you tick Delete Permanently).
 -   **Transactions:** Avoid manual edits when possible; use staging + clean-up to ensure formulas (markup, timestamps) stay consistent.
 -   **Properties:** Keep keywords current so imports and clean-up correctly map property names.
@@ -41,7 +41,6 @@
 ## Tips & Reminders
 
 -   Start date or end date can be left blank to remove the constraint.
--   `Admin Fee Override` (Entry Controls B7): blank = property default, TRUE = force on, FALSE = force off.
 -   Airbnb totals register only when the property is flagged _Has Airbnb_ and the transaction’s Internal Notes contain “airbnb”.
 -   Clean-up and report generation both write useful warnings to the Apps Script execution log – check there if something does not look right.
 -   Exports include a retry + delay, so running them back-to-back is safe even with many sheets.

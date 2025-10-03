@@ -59,8 +59,7 @@ This guide walks through creating the entire property management reporting syste
     - A4 `Property`
     - A5 `Report Label`
     - A6 `Show Deleted`
-    - A7 `Admin Fee Override`
-3. Format cells B6 and B7 as checkboxes. When Admin Fee Override is left blank, the system uses each property's default. Checked forces admin fees on; unchecked forces them off.
+3. Format cells B6 and B7 as checkboxes.
 4. (Optional) Apply a dropdown on B4 that references `Properties!A2:A` for faster property selection.
 5. The script reads control values from column B. Leave the Property cell blank to load/edit/export all properties; enter a property name to work with that property only.
 
@@ -140,7 +139,6 @@ This guide walks through creating the entire property management reporting syste
     - `Spreadsheet ID`
     - `Report URL`
     - `Properties Included`
-    - `Admin Fee Overrides`
 
     (The script will append rows automatically.)
 

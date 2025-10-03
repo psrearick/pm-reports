@@ -66,7 +66,6 @@ const STAGING_CONTROL = {
   PROPERTY_CELL: 'B4',
   REPORT_LABEL_CELL: 'B5',
   SHOW_DELETED_CELL: 'B6',
-  ADMIN_FEE_OVERRIDE_CELL: 'B7'
 };
 
 const TEMPLATE_TOKENS = {
@@ -80,5 +79,5 @@ const VERSION_SUFFIX_SEPARATOR = '_';
 
 const LOG_HEADERS = {
   IMPORT: ['Timestamp', 'File ID', 'File Name', 'Last Modified', 'Rows Imported', 'Notes'],
-  REPORT: ['Timestamp', 'Report Label', 'Version', 'Start Date', 'End Date', 'Spreadsheet ID', 'Report URL', 'Properties Included', 'Admin Fee Overrides']
+  REPORT: ['Timestamp', 'Report Label', 'Version', 'Start Date', 'End Date', 'Spreadsheet ID', 'Report URL', 'Properties Included']
 };

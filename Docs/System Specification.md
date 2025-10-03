@@ -36,7 +36,7 @@ This document captures the agreed-upon behavior for the automated Google Sheets 
 
 - `Transactions (Master)` holds the canonical dataset. Every record carries:
   - `Transaction ID` (UUID), `Deleted` (boolean flag), `Deleted Timestamp`, etc., with additional hidden columns to support soft deletes.
-- `Entry Controls` stores the user-facing controls for start/end dates, optional property filter, report label, and checkbox overrides. Values from this sheet drive both staging and report generation.
+- `Entry Controls` stores the user-facing controls for start/end dates, optional property filter, and report label. Values from this sheet drive both staging and report generation.
 - `Entry & Edit (Staging)` loads a filtered view based on property/date and includes the following behaviors:
   - Non-deleted rows appear by default.
   - A "Show Deleted" checkbox toggles visibility of soft-deleted rows; when visible they display as checked in the `Deleted` column.
@@ -57,7 +57,7 @@ This document captures the agreed-upon behavior for the automated Google Sheets 
 
 ## Report Generation & Export
 
-- Report creation reads from `Entry & Edit (Staging)` after changes are saved to master, using the same control values from `Entry Controls` (date range, optional property filter, admin-fee override).
+- Report creation reads from `Entry & Edit (Staging)` after changes are saved to master, using the same control values from `Entry Controls` (date range, optional property filter).
 - A new Google Sheets report is created under the Output folder (or inside the `Reports Folder Name` subfolder if configured).
 - Soft-deleted records are excluded from report data by default; permanently deleted rows are removed entirely.
 - Admin fees: during report generation a user-facing control determines whether to apply each property's `Admin Fee`. By default the checkbox state uses the `Admin Fee Enabled` value from the properties sheet.
