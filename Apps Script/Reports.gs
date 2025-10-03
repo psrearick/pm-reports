@@ -273,6 +273,9 @@ function renderSummarySheet_(spreadsheet, reportData, settings) {
           dueToOwners: formatCurrency_(property.totals.dueToOwners),
           totalToPm: formatCurrency_(property.totals.totalToPm),
           totalFees: formatCurrency_(property.totals.totalFees),
+          totalMaf: formatCurrency_(property.totals.totalMaf),
+          totalMarkup: formatCurrency_(property.totals.totalMarkupRevenue),
+          combinedCredits: formatCurrency_(property.totals.combinedCredits),
           newLeaseFees: formatCurrency_(property.totals.newLeaseFees),
           renewalFees: formatCurrency_(property.totals.renewalFees)
         };
@@ -280,6 +283,53 @@ function renderSummarySheet_(spreadsheet, reportData, settings) {
     },
     flags: {}
   };
+  const aggregated = reportData.properties.reduce(function (acc, property) {
+    const totals = property.totals || {};
+    acc.dueToOwners += totals.dueToOwners || 0;
+    acc.totalToPm += totals.totalToPm || 0;
+    acc.totalFees += totals.totalFees || 0;
+    acc.totalMaf += totals.totalMaf || 0;
+    acc.totalMarkup += totals.totalMarkupRevenue || 0;
+    acc.totalDebits += totals.totalDebits || 0;
+    acc.totalCredits += totals.totalCredits || 0;
+    acc.totalSecurityDeposits += totals.totalSecurityDeposits || 0;
+    acc.combinedCredits += totals.combinedCredits || 0;
+    acc.newLeaseFees += totals.newLeaseFees || 0;
+    acc.renewalFees += totals.renewalFees || 0;
+    acc.airbnbTotal += totals.airbnbTotal || 0;
+    acc.airbnbFee += totals.airbnbFee || 0;
+    acc.propertyCount += 1;
+    return acc;
+  }, {
+    dueToOwners: 0,
+    totalToPm: 0,
+    totalFees: 0,
+    totalMaf: 0,
+    totalMarkup: 0,
+    totalDebits: 0,
+    totalCredits: 0,
+    totalSecurityDeposits: 0,
+    combinedCredits: 0,
+    newLeaseFees: 0,
+    renewalFees: 0,
+    airbnbTotal: 0,
+    airbnbFee: 0,
+    propertyCount: 0
+  });
+  context.placeholders['SUMMARY PROPERTY COUNT'] = aggregated.propertyCount;
+  context.placeholders['SUMMARY TOTAL DUE TO OWNERS'] = formatCurrency_(aggregated.dueToOwners);
+  context.placeholders['SUMMARY TOTAL TO PM'] = formatCurrency_(aggregated.totalToPm);
+  context.placeholders['SUMMARY TOTAL FEES'] = formatCurrency_(aggregated.totalFees);
+  context.placeholders['SUMMARY TOTAL MAF'] = formatCurrency_(aggregated.totalMaf);
+  context.placeholders['SUMMARY TOTAL MARKUP'] = formatCurrency_(aggregated.totalMarkup);
+  context.placeholders['SUMMARY TOTAL DEBITS'] = formatCurrency_(aggregated.totalDebits);
+  context.placeholders['SUMMARY TOTAL CREDITS'] = formatCurrency_(aggregated.totalCredits);
+  context.placeholders['SUMMARY TOTAL SECURITY DEPOSITS'] = formatCurrency_(aggregated.totalSecurityDeposits);
+  context.placeholders['SUMMARY COMBINED CREDITS'] = formatCurrency_(aggregated.combinedCredits);
+  context.placeholders['SUMMARY TOTAL NEW LEASE FEES'] = formatCurrency_(aggregated.newLeaseFees);
+  context.placeholders['SUMMARY TOTAL RENEWAL FEES'] = formatCurrency_(aggregated.renewalFees);
+  context.placeholders['SUMMARY AIRBNB TOTAL'] = formatCurrency_(aggregated.airbnbTotal);
+  context.placeholders['SUMMARY AIRBNB FEE'] = formatCurrency_(aggregated.airbnbFee);
   renderTemplateSheet(SHEET_NAMES.TEMPLATE_TOTALS, spreadsheet, 'Summary', context);
 }
 
