@@ -16,7 +16,6 @@ PM Reports is a Google Sheets + Apps Script solution for managing property manag
 ```
 Apps Script/       Core Apps Script source modules
 Docs/              End-user and developer documentation
-pm-reports.code-workspace  VS Code workspace definition
 README.md          Project overview (this file)
 ```
 
