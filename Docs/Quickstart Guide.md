@@ -36,6 +36,7 @@ Open the **Configuration** sheet and fill in the `Value` column for each relevan
     - **Markup** percentage for work orders where `Markup Included` will be TRUE.
     - **Airbnb** percentage and **Has Airbnb** flag if applicable.
     - **Admin Fee** amount and **Admin Fee Enabled** flag.
+    - **Order** column value if you need property tabs (sheets) to appear in a specific sequence (leave blank for alphabetical order).
     - **Key** column keywords to recognise the property in imports (include common abbreviations and alternative names).
 2. Remove properties you no longer manage or add new rows for new properties.
 
@@ -83,7 +84,7 @@ On the **Entry Controls** sheet:
 ## 10. Generate and Review the Report
 
 1. Confirm Entry Controls still reflect the desired period and label.
-2. Choose **Reports → Generate Report**. The script will create a new spreadsheet in the configured Reports folder, populate Summary/Airbnb/Property tabs, reorder them (Summary first, Airbnb second, property tabs after), and log the run.
+2. Choose **Reports → Generate Report**. The script will create a new spreadsheet in the configured Reports folder, populate Summary/Airbnb/Property tabs, reorder them (Summary first, Airbnb second, property tabs sorted by the **Order** column when provided, otherwise alphabetically), and log the run.
 3. Open the generated spreadsheet from the toast notification or by visiting the Reports folder / Report Log.
 4. Inspect the tabs to confirm totals, formatting, and template output.
 

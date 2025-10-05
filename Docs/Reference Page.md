@@ -5,7 +5,7 @@
 -   **Transactions** is the system of record. Every report and export pulls from this table.
 -   **Entry Controls** set the period, property filter, and report label for both staging and reporting.
 -   **Entry & Edit** is a staging sandbox. Use it to review, correct, add, or delete rows before committing changes.
--   **Properties** supplies MAF, markup, admin fee, and keyword mapping information for each property.
+-   **Properties** supplies MAF, markup, admin fee, optional tab order, and keyword mapping information for each property.
 -   **Configuration** stores Drive IDs and column header names used by the automations.
 -   Reports are rendered from hidden templates and delivered in a dedicated Drive folder. Exports create per-sheet PDFs.
 
@@ -34,7 +34,7 @@
 -   **Entry Controls** (B2–B7): Start Date, End Date, Property filter, Report Label, Show Deleted toggle.
 -   **Entry & Edit:** Contains standard transaction columns plus `Delete Permanently`. Clearing a staging row removes it from the master table (it becomes a soft delete unless you tick Delete Permanently).
 -   **Transactions:** Avoid manual edits when possible; use staging + clean-up to ensure formulas (markup, timestamps) stay consistent.
--   **Properties:** Keep keywords current so imports and clean-up correctly map property names.
+-   **Properties:** Keep keywords current so imports and clean-up correctly map property names, and use the optional `Order` column to control sheet order in reports.
 -   **Import Log / Report Log (Hidden):** Use these for audit history and to identify which report to export.
 -   **ReportBodyTemplate / ReportTotalsTemplate / ReportAirbnbTemplate (Hidden):** Update these templates to change the report exports.
 

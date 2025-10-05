@@ -87,7 +87,7 @@ All automation is exposed under **Reports** in the sheet menu. Each command vali
     -   `B5` **Report Label** – used in report naming and displayed in templates.
 -   **Processing steps:**
     1. Collect not-deleted transactions within the date range (and property filter if provided).
-    2. Group by property (alphabetically sorted) and compute totals:
+    2. Group by property (sorted by the optional **Order** column when provided, otherwise alphabetically) and compute totals:
         - Credits, Fees, Debits, Security Deposits, Markup Revenue.
         - Unit count (unique, non-empty, excluding `CAM`).
         - MAF = `(Credits × property MAF rate) + (Unit count × 5)` plus optional Admin Fee.
@@ -96,7 +96,7 @@ All automation is exposed under **Reports** in the sheet menu. Each command vali
         - Combined Credits, Total Debits, Due to Owners, Total to PM.
     3. Create a versioned spreadsheet in the configured **Reports** Drive folder (`Report Label`, or `Report Label_2`, etc.).
     4. Render property tabs using `ReportBodyTemplate`, the summary tab using `ReportTotalsTemplate`, and (when applicable) an Airbnb tab using `ReportAirbnbTemplate`.
-    5. Delete the default `Sheet1`, then reorder sheets so **Summary** is first, **Airbnb** second (only if it was created), followed by property tabs in alphabetical order. Summary is left active.
+    5. Delete the default `Sheet1`, then reorder sheets so **Summary** is first, **Airbnb** second (only if it was created), followed by property tabs ordered by the numeric **Order** column (lowest to highest) with any blanks falling back to alphabetical order. Summary is left active.
     6. Write an entry to **Report Log** capturing the period, spreadsheet ID/URL, version number, properties included, and admin fee decisions.
 -   **Outputs:** One property tab per property, plus the summary (with per-property rows and aggregate placeholders) and optional Airbnb tab.
 
@@ -151,6 +151,7 @@ You can cache-bust values by editing them directly; the script reads fresh value
 | Has Airbnb        | TRUE if Airbnb totals should be tracked for this property.                                   |
 | Admin Fee         | Flat admin fee amount added to MAF when admin fee is applied.                                |
 | Admin Fee Enabled | Default boolean indicating whether the admin fee should apply.                               |
+| Order             | Optional numeric value that drives the property tab order in generated reports (lowest first). Leave blank to fall back to alphabetical order. |
 | Key               | Comma-separated list of keywords to match property names that appear differently in imports. |
 
 Maintain this sheet so property mapping, MAF, and markup calculations stay accurate.
