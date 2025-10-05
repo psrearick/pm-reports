@@ -37,6 +37,7 @@ const PROPERTY_COLUMNS = {
   HAS_AIRBNB: 'Has Airbnb',
   ADMIN_FEE: 'Admin Fee',
   ADMIN_FEE_ENABLED: 'Admin Fee Enabled',
+  ORDER: 'Order',
   KEYWORDS: 'Key'
 };
 

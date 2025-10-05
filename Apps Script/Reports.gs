@@ -53,7 +53,8 @@ function buildReportData_(startDate, endDate, propertyFilter) {
       hasAirbnb: false,
       airbnbPercent: 0,
       adminFee: 0,
-      adminFeeEnabled: false
+      adminFeeEnabled: false,
+      order: null
     };
     const totals = calculatePropertyTotals_(propertyTransactions, propertyConfig);
     properties.push({
@@ -63,7 +64,20 @@ function buildReportData_(startDate, endDate, propertyFilter) {
       totals: totals
     });
   });
-  properties.sort(function (a, b) { return a.name.localeCompare(b.name); });
+  properties.sort(function (a, b) {
+    const orderA = (a.property && typeof a.property.order === 'number') ? a.property.order : null;
+    const orderB = (b.property && typeof b.property.order === 'number') ? b.property.order : null;
+    if (orderA !== null && orderB !== null && orderA !== orderB) {
+      return orderA - orderB;
+    }
+    if (orderA !== null && orderB === null) {
+      return -1;
+    }
+    if (orderA === null && orderB !== null) {
+      return 1;
+    }
+    return a.name.localeCompare(b.name);
+  });
   return {
     startDate: startDate,
     endDate: endDate,

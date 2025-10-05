@@ -130,6 +130,17 @@ function getPropertiesConfig() {
       adminFeeEnabled: toBool(row[headerIndex[PROPERTY_COLUMNS.ADMIN_FEE_ENABLED]]),
       keywords: parseKeywords_(row[headerIndex[PROPERTY_COLUMNS.KEYWORDS]])
     };
+    if (Object.prototype.hasOwnProperty.call(headerIndex, PROPERTY_COLUMNS.ORDER)) {
+      const rawOrder = row[headerIndex[PROPERTY_COLUMNS.ORDER]];
+      if (!isBlank_(rawOrder)) {
+        const parsedOrder = toNumber(rawOrder, null);
+        property.order = typeof parsedOrder === 'number' ? parsedOrder : null;
+      } else {
+        property.order = null;
+      }
+    } else {
+      property.order = null;
+    }
     properties.push(property);
   }
   PROPERTIES_CACHE = properties;
