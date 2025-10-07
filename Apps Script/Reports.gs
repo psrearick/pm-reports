@@ -154,6 +154,7 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
     debits: 0,
     markupRevenue: 0,
     securityDeposits: 0,
+    securityDepositMailFees: 0,
     unitCount: 0,
     adminFeeApplied: false,
     adminFeeAmount: 0,
@@ -181,6 +182,9 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
     }
     if (transaction.explanation === 'Renewal Fee') {
       totals.renewalFees += transaction.debits || 0;
+    }
+    if (normalize("Security Deposit Return Mail Fee") === normalize(transaction.explanation)) {
+        totals.securityDepositMailFees += transaction.debits || 0;
     }
   });
   totals.unitCount = unitSet.size;
@@ -211,6 +215,7 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
   totals.totalFees = Math.round(totals.fees * 100) / 100;
   totals.totalMarkupRevenue = Math.round(totals.markupRevenue * 100) / 100;
   totals.totalSecurityDeposits = Math.round(totals.securityDeposits * 100) / 100;
+  totals.totalSecurityDepositMailFees = Math.round(totals.securityDepositMailFees * 100) / 100;
   return totals;
 }
 
@@ -227,6 +232,7 @@ function renderPropertySheets_(spreadsheet, reportData, settings) {
         'TOTAL MARKUP': formatCurrency_(property.totals.totalMarkupRevenue),
         'TOTAL MAF': formatCurrency_(property.totals.totalMaf),
         'TOTAL SECURITY DEPOSITS': formatCurrency_(property.totals.totalSecurityDeposits),
+        'TOTAL SECURITY DEPOSIT RETURN MAIL FEES': formatCurrency_(property.totals.totalSecurityDepositMailFees),
         'TOTAL DEBITS': formatCurrency_(property.totals.totalDebits),
         'COMBINED CREDITS': formatCurrency_(property.totals.combinedCredits),
         'TOTAL RECEIPTS': formatCurrency_(property.totals.combinedCredits),
@@ -299,6 +305,7 @@ function renderSummarySheet_(spreadsheet, reportData, settings) {
     acc.totalDebits += totals.totalDebits || 0;
     acc.totalCredits += totals.totalCredits || 0;
     acc.totalSecurityDeposits += totals.totalSecurityDeposits || 0;
+    acc.totalSecurityDepositMailFees += totals.totalSecurityDepositMailFees || 0;
     acc.combinedCredits += totals.combinedCredits || 0;
     acc.newLeaseFees += totals.newLeaseFees || 0;
     acc.renewalFees += totals.renewalFees || 0;
@@ -315,6 +322,7 @@ function renderSummarySheet_(spreadsheet, reportData, settings) {
     totalDebits: 0,
     totalCredits: 0,
     totalSecurityDeposits: 0,
+    totalSecurityDepositMailFees: 0,
     combinedCredits: 0,
     newLeaseFees: 0,
     renewalFees: 0,
@@ -331,6 +339,7 @@ function renderSummarySheet_(spreadsheet, reportData, settings) {
   context.placeholders['SUMMARY TOTAL DEBITS'] = formatCurrency_(aggregated.totalDebits);
   context.placeholders['SUMMARY TOTAL CREDITS'] = formatCurrency_(aggregated.totalCredits);
   context.placeholders['SUMMARY TOTAL SECURITY DEPOSITS'] = formatCurrency_(aggregated.totalSecurityDeposits);
+  context.placeholders['SUMMARY TOTAL SECURITY DEPOSIT RETURN MAIL FEES'] = formatCurrency_(aggregated.totalSecurityDepositMailFees);
   context.placeholders['SUMMARY COMBINED CREDITS'] = formatCurrency_(aggregated.combinedCredits);
   context.placeholders['SUMMARY TOTAL NEW LEASE FEES'] = formatCurrency_(aggregated.newLeaseFees);
   context.placeholders['SUMMARY TOTAL RENEWAL FEES'] = formatCurrency_(aggregated.renewalFees);

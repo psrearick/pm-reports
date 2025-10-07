@@ -130,3 +130,12 @@ function truncateName_(name, maxLength) {
   }
   return name.substring(0, maxLength);
 }
+
+function normalize(str) {
+  return (str || "")
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .trim()
+    .replace(/\s+/, " ");
+}
