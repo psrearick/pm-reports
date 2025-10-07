@@ -186,11 +186,9 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
   totals.unitCount = unitSet.size;
   const mafRate = propertyConfig.maf || 0;
   const mafFromCredits = totals.credits * mafRate;
-  // const mafFromUnits = totals.unitCount * 5;
-  let totalMaf = mafFromCredits // + mafFromUnits;
+  let totalMaf = mafFromCredits;
   const adminFeeApplied = toBool(propertyConfig.adminFeeEnabled);
   if (adminFeeApplied && propertyConfig.adminFee) {
-    totalMaf += propertyConfig.adminFee;
     totals.adminFeeApplied = true;
     totals.adminFeeAmount = propertyConfig.adminFee;
   }
