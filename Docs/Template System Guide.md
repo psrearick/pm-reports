@@ -33,6 +33,7 @@ Use square brackets to insert single values that belong to the overall context (
 | `[TOTAL MARKUP]` | Total markup revenue. |
 | `[TOTAL MAF]` | MAF charge (credits × MAF % + unit count × 5 + admin fee when applied). |
 | `[TOTAL SECURITY DEPOSITS]` | Sum of security deposits. |
+| `[TOTAL SECURITY DEPOSIT RETURN MAIL FEES]` | Sum of security deposit return mail fees. (debits with an explanation of "Security Deposit Return Mail Fee") |
 | `[TOTAL DEBITS]` | Total debits (including markup and MAF). |
 | `[COMBINED CREDITS]` / `[TOTAL RECEIPTS]` | Credits + security deposits (+ Airbnb income when applicable). |
 | `[DUE TO OWNERS]` | Combined credits minus total debits. |
@@ -57,6 +58,7 @@ In addition to `[REPORT LABEL]` and `[REPORT PERIOD]`, the summary template can 
 | `[SUMMARY TOTAL DEBITS]` | Sum of total debits across properties. |
 | `[SUMMARY TOTAL CREDITS]` | Sum of property credit totals. |
 | `[SUMMARY TOTAL SECURITY DEPOSITS]` | Sum of security deposit totals. |
+| `[SUMMARY TOTAL SECURITY DEPOSIT RETURN MAIL FEES]` | Sum of security deposit return mail fees totals. |
 | `[SUMMARY COMBINED CREDITS]` | Sum of combined credits. |
 | `[SUMMARY TOTAL NEW LEASE FEES]` | Aggregate of “New Lease Fee” debits. |
 | `[SUMMARY TOTAL RENEWAL FEES]` | Aggregate of “Renewal Fee” debits. |
