@@ -166,7 +166,6 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
   };
   const unitSet = new Set();
   transactions.forEach(function (transaction) {
-    totals.credits += transaction.credits || 0;
     totals.fees += transaction.fees || 0;
     totals.debits += transaction.debits || 0;
     totals.markupRevenue += transaction.markupRevenue || 0;
@@ -176,6 +175,8 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
     }
     if (transaction.isAirbnb) {
       totals.airbnbIncome += transaction.credits || 0;
+    } else {
+      totals.credits += transaction.credits || 0;
     }
     if (transaction.explanation === 'New Lease Fee') {
       totals.newLeaseFees += transaction.debits || 0;
@@ -196,7 +197,7 @@ function calculatePropertyTotals_(transactions, propertyConfig) {
     totals.adminFeeApplied = true;
     totals.adminFeeAmount = propertyConfig.adminFee;
   }
-  let totalDebits = totals.debits + totals.markupRevenue + totalMaf;
+  let totalDebits = totals.debits + totals.markupRevenue + totalMaf + totals.adminFeeAmount;
   let combinedCredits = totals.credits + totals.securityDeposits;
   if (propertyConfig.hasAirbnb) {
     totals.airbnbTotal = totals.airbnbIncome;
